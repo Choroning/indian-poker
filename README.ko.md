@@ -1,4 +1,4 @@
-# 인디언포커 — 통신 기반 미니게임
+# 인디언 포커
 
 ![Last Commit](https://img.shields.io/github/last-commit/Choroning/indian-poker)
 ![Languages](https://img.shields.io/github/languages/top/Choroning/indian-poker)

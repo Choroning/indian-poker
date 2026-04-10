@@ -1,4 +1,4 @@
-# Indian Poker — A Network-Based Mini-Game
+# Indian Poker
 
 ![Last Commit](https://img.shields.io/github/last-commit/Choroning/indian-poker)
 ![Languages](https://img.shields.io/github/languages/top/Choroning/indian-poker)

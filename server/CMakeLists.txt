@@ -26,6 +26,7 @@ add_library(ip_core STATIC
     util/version.cpp
     net/tcp_listener.cpp
     net/connection.cpp
+    net/event_loop.cpp
 )
 target_include_directories(ip_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ip_core PUBLIC OpenSSL::Crypto nlohmann_json::nlohmann_json)

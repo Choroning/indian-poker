@@ -339,7 +339,6 @@ EOF
 ```cpp
 #pragma once
 #include <cstdint>
-#include <string>
 
 namespace ip::net {
 
@@ -386,7 +385,6 @@ private:
 #include <cstring>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 namespace ip::net {
 
@@ -562,8 +560,7 @@ private:
 
 #include <unistd.h>
 #include <cerrno>
-#include <cstring>
-#include <stdexcept>
+#include <cstddef>
 #include <sys/socket.h>
 #include <utility>
 
@@ -729,11 +726,11 @@ private:
 
 #include <sys/select.h>
 #include <sys/time.h>
-#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace ip::net {
 

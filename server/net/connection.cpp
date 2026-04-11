@@ -3,8 +3,6 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstddef>
-#include <cstring>
-#include <stdexcept>
 #include <sys/socket.h>
 #include <utility>
 

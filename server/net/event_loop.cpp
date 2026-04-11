@@ -2,7 +2,6 @@
 
 #include <sys/select.h>
 #include <sys/time.h>
-#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>

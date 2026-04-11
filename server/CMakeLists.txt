@@ -24,6 +24,7 @@ include(cmake/FetchDeps.cmake)
 # Library of all non-main sources, used by both the server binary and tests.
 add_library(ip_core STATIC
     util/version.cpp
+    net/tcp_listener.cpp
 )
 target_include_directories(ip_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ip_core PUBLIC OpenSSL::Crypto nlohmann_json::nlohmann_json)

@@ -24,6 +24,8 @@ include(cmake/FetchDeps.cmake)
 # Library of all non-main sources, used by both the server binary and tests.
 add_library(ip_core STATIC
     util/version.cpp
+    util/sha1.cpp
+    util/base64.cpp
     net/tcp_listener.cpp
     net/connection.cpp
     net/event_loop.cpp

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "game/igame.h"
 #include "session/player.h"
 
 namespace ip::session {
@@ -35,12 +36,16 @@ public:
     void set_host(const std::string& nickname) { host_ = nickname; }
     void promote_next_host_if_needed();
 
+    ip::game::IGame* game() { return game_.get(); }
+    void set_game(std::unique_ptr<ip::game::IGame> g) { game_ = std::move(g); }
+
 private:
     std::string code_;
     int max_players_;
     RoomState state_ = RoomState::Open;
     std::vector<std::unique_ptr<Player>> players_;
     std::string host_;
+    std::unique_ptr<ip::game::IGame> game_;
 };
 
 } // namespace ip::session

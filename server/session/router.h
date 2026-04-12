@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "game/outgoing.h"
 #include "session/room_registry.h"
 #include "util/random.h"
 
@@ -26,6 +27,9 @@ public:
 private:
     void handle_create_room(int fd, const nlohmann::json& msg);
     void handle_join_room(int fd, const nlohmann::json& msg);
+    void handle_start_game(int fd, const nlohmann::json& msg);
+    void handle_game_action(int fd, const nlohmann::json& msg);
+    void fanout_game_state(Room& room, const ip::game::OutgoingList& outs);
 
     void send_error(int fd, const std::string& code, const std::string& message);
     void send_json(int fd, const nlohmann::json& j);

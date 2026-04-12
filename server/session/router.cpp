@@ -1,6 +1,9 @@
 #include "session/router.h"
 
-#include <iostream>
+#include "game/indian_poker/indian_poker.h"
+
+#include <memory>
+#include <random>
 
 namespace ip::session {
 
@@ -27,6 +30,13 @@ static json lobby_update(const Room& r) {
 }
 
 void Router::on_text(int fd, const std::string& text) {
+    // Clean up closed rooms from previous tick.
+    std::vector<std::string> to_erase;
+    for (const auto& [code, r] : rooms_.all()) {
+        if (r->state() == RoomState::Closed) to_erase.push_back(code);
+    }
+    for (const auto& code : to_erase) rooms_.erase(code);
+
     json msg;
     try {
         msg = json::parse(text);
@@ -41,6 +51,8 @@ void Router::on_text(int fd, const std::string& text) {
     const std::string type = msg["type"];
     if (type == "create_room") handle_create_room(fd, msg);
     else if (type == "join_room") handle_join_room(fd, msg);
+    else if (type == "start_game") handle_start_game(fd, msg);
+    else if (type == "action" || type == "ready_next_hand") handle_game_action(fd, msg);
     else send_error(fd, "MALFORMED_MESSAGE", "unknown type: " + type);
 }
 
@@ -180,6 +192,81 @@ void Router::on_disconnect(int fd, uint64_t now_ms) {
                 {"nickname", nickname},
                 {"grace_period_ms", 15000},
             });
+        }
+    }
+}
+
+static ip::game::indian_poker::Dealer make_random_dealer(uint64_t seed) {
+    auto rng = std::make_shared<std::mt19937_64>(seed);
+    return [rng](int n) {
+        std::vector<int> deck = {1,2,3,4,5,6,7,8,9,10};
+        std::shuffle(deck.begin(), deck.end(), *rng);
+        return std::vector<int>(deck.begin(), deck.begin() + n);
+    };
+}
+
+void Router::handle_start_game(int fd, const nlohmann::json& /*msg*/) {
+    auto it = fd_owner_.find(fd);
+    if (it == fd_owner_.end()) { send_error(fd, "ROOM_NOT_FOUND", "not in a room"); return; }
+    Room* room = rooms_.find(it->second.room_code);
+    if (!room) { send_error(fd, "ROOM_NOT_FOUND", "room gone"); return; }
+    if (room->host_nickname() != it->second.nickname) {
+        send_error(fd, "NOT_HOST", "only host can start");
+        return;
+    }
+    if (room->players().size() < 2) {
+        send_error(fd, "NOT_ENOUGH_PLAYERS", "need at least 2 players");
+        return;
+    }
+    if (room->state() != RoomState::Open) {
+        send_error(fd, "ROOM_IN_PROGRESS", "already started");
+        return;
+    }
+
+    auto game = std::make_unique<ip::game::indian_poker::IndianPoker>(make_random_dealer(42));
+    std::vector<std::string> nicks;
+    for (const auto& p : room->players()) nicks.push_back(p->nickname());
+
+    auto outs = game->start(nicks);
+    room->set_state(RoomState::Locked);
+    room->set_game(std::move(game));
+    fanout_game_state(*room, outs);
+    if (room->game() && room->game()->finished()) {
+        room->set_state(RoomState::Closed);
+    }
+}
+
+void Router::handle_game_action(int fd, const nlohmann::json& msg) {
+    auto it = fd_owner_.find(fd);
+    if (it == fd_owner_.end()) { send_error(fd, "ROOM_NOT_FOUND", "not in a room"); return; }
+    Room* room = rooms_.find(it->second.room_code);
+    if (!room || !room->game()) { send_error(fd, "INVALID_ACTION", "no game"); return; }
+    auto outs = room->game()->handle_action(it->second.nickname, msg);
+    fanout_game_state(*room, outs);
+    if (room->game() && room->game()->finished()) {
+        room->set_state(RoomState::Closed);
+    }
+}
+
+void Router::fanout_game_state(Room& room, const ip::game::OutgoingList& outs) {
+    for (const auto& o : outs) {
+        if (std::holds_alternative<ip::game::Private>(o)) {
+            const auto& pv = std::get<ip::game::Private>(o);
+            const auto* player = room.find_player(pv.nickname);
+            if (player && player->connected()) send_json(player->fd(), pv.payload);
+            continue;
+        }
+        const auto& bc = std::get<ip::game::Broadcast>(o);
+        if (bc.payload.value("type", "") == "__game_state_fanout") {
+            if (!room.game()) continue;
+            for (const auto& p : room.players()) {
+                if (!p->connected()) continue;
+                send_json(p->fd(), room.game()->snapshot_for(p->nickname()));
+            }
+            continue;
+        }
+        for (const auto& p : room.players()) {
+            if (p->connected()) send_json(p->fd(), bc.payload);
         }
     }
 }

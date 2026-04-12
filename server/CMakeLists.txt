@@ -36,6 +36,7 @@ add_library(ip_core STATIC
     session/room.cpp
     session/room_registry.cpp
     session/router.cpp
+    game/indian_poker/indian_poker.cpp
 )
 target_include_directories(ip_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ip_core PUBLIC OpenSSL::Crypto nlohmann_json::nlohmann_json)

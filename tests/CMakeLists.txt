@@ -7,6 +7,7 @@ add_executable(ip_tests
     test_player_room.cpp
     test_room_code.cpp
     test_join_flow.cpp
+    test_indian_poker.cpp
 )
 target_link_libraries(ip_tests PRIVATE ip_core Catch2::Catch2WithMain)
 target_include_directories(ip_tests PRIVATE ${CMAKE_SOURCE_DIR})

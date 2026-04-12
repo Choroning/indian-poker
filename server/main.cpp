@@ -47,6 +47,7 @@ int main() {
             std::move(listener),
             [&states](int fd) { states[fd] = {}; },
             [&](int fd, const std::string& chunk) {
+                router.tick(now_ms());
                 auto& s = states[fd];
                 if (!s.upgraded) {
                     s.pending.append(chunk);
@@ -92,6 +93,7 @@ int main() {
             },
             [&](int fd) {
                 router.on_disconnect(fd, now_ms());
+                router.tick(now_ms());
                 states.erase(fd);
             }
         );

@@ -19,6 +19,7 @@ public:
 
     void on_text(int fd, const std::string& text);
     void on_disconnect(int fd, uint64_t now_ms);
+    void tick(uint64_t now_ms);
 
     RoomRegistry& rooms() { return rooms_; }
 
@@ -37,6 +38,8 @@ private:
     CloseFn close_;
     RoomRegistry rooms_;
     ip::util::RoomCodeGen code_gen_;
+    // (room_code:nickname) -> disconnected_at_ms
+    std::unordered_map<std::string, uint64_t> grace_;
 };
 
 } // namespace ip::session

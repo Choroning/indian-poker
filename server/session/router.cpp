@@ -108,7 +108,24 @@ void Router::handle_join_room(int fd, const json& msg) {
             send_error(fd, "NICKNAME_TAKEN", "nickname is in use");
             return;
         }
-        send_error(fd, "NICKNAME_TAKEN", "nickname is in use");
+        // Reconnect path.
+        existing->bind_fd(fd);
+        fd_owner_[fd] = FdOwner{code, nickname};
+        grace_.erase(code + ":" + nickname);
+        send_json(fd, {
+            {"type", "joined_room"},
+            {"room_code", code},
+            {"you", nickname},
+            {"reconnect", true},
+        });
+        for (const auto& p : room->players()) {
+            if (p->connected() && p->fd() != fd) {
+                send_json(p->fd(), {
+                    {"type", "player_reconnected"},
+                    {"nickname", nickname},
+                });
+            }
+        }
         return;
     }
 
@@ -141,7 +158,7 @@ void Router::handle_join_room(int fd, const json& msg) {
     }
 }
 
-void Router::on_disconnect(int fd, uint64_t /*now_ms*/) {
+void Router::on_disconnect(int fd, uint64_t now_ms) {
     auto it = fd_owner_.find(fd);
     if (it == fd_owner_.end()) return;
     const std::string code = it->second.room_code;
@@ -150,14 +167,48 @@ void Router::on_disconnect(int fd, uint64_t /*now_ms*/) {
 
     Room* room = rooms_.find(code);
     if (!room) return;
+    Player* player = room->find_player(nickname);
+    if (!player) return;
 
-    room->remove_player(nickname);
-    if (room->players().empty()) {
-        rooms_.erase(code);
-        return;
-    }
+    player->mark_disconnected(now_ms);
+    grace_[code + ":" + nickname] = now_ms;
+
     for (const auto& p : room->players()) {
-        if (p->connected()) send_json(p->fd(), lobby_update(*room));
+        if (p->connected()) {
+            send_json(p->fd(), {
+                {"type", "player_disconnected"},
+                {"nickname", nickname},
+                {"grace_period_ms", 15000},
+            });
+        }
+    }
+}
+
+void Router::tick(uint64_t now_ms) {
+    constexpr uint64_t kGraceMs = 15000;
+    std::vector<std::string> expired;
+    for (const auto& [key, at] : grace_) {
+        if (now_ms - at >= kGraceMs) expired.push_back(key);
+    }
+    for (const auto& key : expired) {
+        grace_.erase(key);
+        auto colon = key.find(':');
+        std::string code = key.substr(0, colon);
+        std::string nickname = key.substr(colon + 1);
+        Room* room = rooms_.find(code);
+        if (!room) continue;
+        room->remove_player(nickname);
+        for (const auto& p : room->players()) {
+            if (p->connected()) {
+                send_json(p->fd(), {
+                    {"type", "player_left"},
+                    {"nickname", nickname},
+                    {"reason", "timeout"},
+                });
+                send_json(p->fd(), lobby_update(*room));
+            }
+        }
+        if (room->players().empty()) rooms_.erase(code);
     }
 }
 

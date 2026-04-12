@@ -87,20 +87,12 @@ body {
     padding-bottom: 10vh;
 }
 
-/* ── Hero Title (centered, two-line) ──────────────────── */
+/* ── Hero Title (fixed above center) ──────────────────── */
 .hero-title {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 56px;
-    transition: all 700ms var(--ease-out);
-}
-
-.hero-title.pushed-up {
-    transform: translateY(-32px);
-    opacity: 0.5;
-    filter: blur(2px);
-    pointer-events: none;
+    margin-bottom: 48px;
 }
 
 .hero-line {
@@ -112,12 +104,12 @@ body {
     user-select: none;
 }
 .hero-line-1 {
-    font-size: clamp(2.4rem, 8vw, 3.8rem);
+    font-size: clamp(2.8rem, 9vw, 4.2rem);
     color: var(--text);
     animation: hero-enter 900ms var(--ease-out) both;
 }
 .hero-line-2 {
-    font-size: clamp(2.8rem, 9vw, 4.4rem);
+    font-size: clamp(3.2rem, 10vw, 5rem);
     color: var(--gold);
     animation: hero-enter 900ms 120ms var(--ease-out) both;
 }
@@ -140,19 +132,19 @@ body {
 
 .choice-slot {
     text-align: center;
-    transition: all 700ms var(--ease-out);
+    transition: opacity 700ms var(--ease-out),
+                transform 700ms var(--ease-out),
+                filter 700ms var(--ease-out);
 }
 
-/* When a slot is hidden, fade+blur out */
 .choice-slot.is-hidden {
     opacity: 0;
-    transform: scale(0.88);
-    filter: blur(4px);
+    transform: scale(0.92);
+    filter: blur(3px);
     pointer-events: none;
     position: absolute;
 }
 
-/* When expanded, center itself */
 .choice-slot.is-expanded {
     width: 100%;
     display: flex;
@@ -162,7 +154,7 @@ body {
 
 .choice-label {
     font-family: var(--font);
-    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-size: clamp(1.3rem, 3.5vw, 1.7rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-2);
@@ -170,7 +162,9 @@ body {
     border: none;
     cursor: pointer;
     padding: 6px 4px;
-    transition: all 600ms var(--ease-out);
+    transition: color 600ms var(--ease-out),
+                transform 600ms var(--ease-out),
+                opacity 600ms var(--ease-out);
     user-select: none;
     display: inline-flex;
     align-items: center;
@@ -211,12 +205,12 @@ body {
 
 .choice-slot.is-expanded .choice-form {
     display: block;
-    animation: form-reveal 600ms var(--ease-out) both;
-    animation-delay: 150ms;
+    animation: form-reveal 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 200ms;
 }
 
 @keyframes form-reveal {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    from { opacity: 0; transform: translateY(24px) scale(0.96); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 

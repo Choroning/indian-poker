@@ -126,7 +126,7 @@ body {
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 4px;
+    gap: 20px;
     animation: fade-up 700ms 400ms var(--ease-out) both;
 }
 

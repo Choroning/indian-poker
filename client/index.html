@@ -14,37 +14,46 @@
         <section id="landing" class="screen">
             <div class="landing-grain"></div>
             <div class="landing-content">
-                <div class="landing-top">
-                    <h1 class="hero-title">
-                        <span class="hero-line hero-line-1">Indian</span>
-                        <span class="hero-line hero-line-2">Poker</span>
-                    </h1>
-                    <p class="hero-sub">방을 만들거나 코드를 입력해 참가하세요</p>
-                </div>
+                <header class="landing-header">
+                    <span class="brand">Indian Poker</span>
+                </header>
 
-                <div class="form-row">
-                    <form id="form-create" class="card-form">
-                        <div class="form-label">방 만들기</div>
-                        <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
-                        <select name="max_players">
-                            <option value="2">2인</option>
-                            <option value="3">3인</option>
-                            <option value="4" selected>4인</option>
-                        </select>
-                        <button type="submit" class="btn-gold">만들기</button>
-                    </form>
-                    <div class="form-divider"><span>OR</span></div>
-                    <form id="form-join" class="card-form">
-                        <div class="form-label">참가하기</div>
-                        <input name="room_code" placeholder="방 코드" required maxlength="6" pattern="[A-Z2-9]{6}" autocapitalize="characters" autocomplete="off" class="input-code">
-                        <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
-                        <button type="submit" class="btn-gold">참가</button>
-                    </form>
+                <div class="landing-center">
+                    <!-- Two subject-style buttons -->
+                    <div class="choice-stack">
+                        <div class="choice-slot" id="slot-create">
+                            <button class="choice-label" data-target="create">방 만들기</button>
+                            <div class="choice-form" id="panel-create">
+                                <form id="form-create" class="card-form">
+                                    <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
+                                    <select name="max_players">
+                                        <option value="2">2인</option>
+                                        <option value="3">3인</option>
+                                        <option value="4" selected>4인</option>
+                                    </select>
+                                    <button type="submit" class="btn-gold">만들기</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="choice-slot" id="slot-join">
+                            <button class="choice-label" data-target="join">참가하기</button>
+                            <div class="choice-form" id="panel-join">
+                                <form id="form-join" class="card-form">
+                                    <input name="room_code" placeholder="방 코드" required maxlength="6" pattern="[A-Z2-9]{6}" autocapitalize="characters" autocomplete="off" class="input-code">
+                                    <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
+                                    <button type="submit" class="btn-gold">참가</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <footer class="site-footer">
-                    <span class="footer-logo">crns<sup>&reg;</sup></span>
-                    <p class="footer-copy">&copy; 2026 Cheolwon Park. All rights reserved.</p>
+                    <div class="footer-inner">
+                        <span class="footer-logo">crns<sup>&reg;</sup></span>
+                        <p class="footer-copy">&copy; 2026 Cheolwon Park. All rights reserved.</p>
+                    </div>
                 </footer>
             </div>
         </section>

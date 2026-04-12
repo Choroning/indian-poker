@@ -9,6 +9,51 @@ async function ensureOpen() {
     if (!ws.ws || ws.ws.readyState > 1) await ws.open();
 }
 
+/* ── Landing: quiz-app style expand/collapse ──────────── */
+const slotCreate = document.getElementById("slot-create");
+const slotJoin = document.getElementById("slot-join");
+let expandedSlot = null;
+
+function collapseAll() {
+    slotCreate.classList.remove("is-expanded", "is-hidden");
+    slotJoin.classList.remove("is-expanded", "is-hidden");
+    // Remove close buttons
+    for (const btn of document.querySelectorAll(".choice-close")) btn.remove();
+    expandedSlot = null;
+}
+
+function expandSlot(slot) {
+    const other = slot === slotCreate ? slotJoin : slotCreate;
+    slot.classList.add("is-expanded");
+    slot.classList.remove("is-hidden");
+    other.classList.add("is-hidden");
+    other.classList.remove("is-expanded");
+
+    // Add close button next to label if not already present
+    const label = slot.querySelector(".choice-label");
+    if (!slot.querySelector(".choice-close")) {
+        const close = document.createElement("button");
+        close.className = "choice-close";
+        close.textContent = "\u2715";
+        close.setAttribute("aria-label", "닫기");
+        close.addEventListener("click", (e) => { e.stopPropagation(); collapseAll(); });
+        label.after(close);
+    }
+    expandedSlot = slot;
+}
+
+for (const label of document.querySelectorAll(".choice-label")) {
+    label.addEventListener("click", () => {
+        const slot = label.closest(".choice-slot");
+        if (slot.classList.contains("is-expanded")) {
+            collapseAll();
+        } else {
+            expandSlot(slot);
+        }
+    });
+}
+
+/* ── Form submissions ─────────────────────────────────── */
 document.getElementById("form-create").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
@@ -47,6 +92,7 @@ document.getElementById("game-actions").addEventListener("click", (e) => {
     }
 });
 
+/* ── WebSocket handlers ───────────────────────────────── */
 ws.on("room_created", (msg) => {
     roomCode = msg.room_code;
     showScreen("lobby");

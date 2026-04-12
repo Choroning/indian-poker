@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════
    Indian Poker — "Ink & Felt"
-   Deep blue-black with warm gold. Physical card depth.
    ═══════════════════════════════════════════════════════ */
 
 /* ── Tokens ───────────────────────────────────────────── */
@@ -23,13 +22,13 @@
 
     --green:        #3c8a5c;
     --green-bg:     rgba(60, 138, 92, 0.06);
-    --felt:         #0a1410;
 
     --text:         #e8e4dc;
     --text-2:       #a8a298;
     --text-3:       #706a62;
     --text-4:       #484440;
 
+    --font:         'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --mono:         'SF Mono', SFMono-Regular, ui-monospace, 'Menlo', monospace;
     --ease-out:     cubic-bezier(0.23, 1, 0.32, 1);
     --ease-spring:  cubic-bezier(0.22, 1.2, 0.36, 1);
@@ -43,13 +42,12 @@ html { color-scheme: dark; }
 body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: var(--font);
     -webkit-font-smoothing: antialiased;
     font-size: 15px;
     line-height: 1.5;
 }
 
-/* ── Utility ──────────────────────────────────────────── */
 .screen { display: flex; flex-direction: column; min-height: 100dvh; position: relative; }
 .hidden { display: none !important; }
 
@@ -58,13 +56,12 @@ body {
     outline-offset: 2px;
 }
 
+
 /* ═══════════════════════════════════════════════════════
    LANDING
    ═══════════════════════════════════════════════════════ */
-
 #landing { overflow: hidden; }
 
-/* Film grain overlay */
 .landing-grain {
     position: absolute; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
@@ -76,103 +73,133 @@ body {
 .landing-content {
     position: relative; z-index: 2;
     flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 40px 24px 24px;
-    max-width: 640px; margin: 0 auto; width: 100%;
+    max-width: 720px; margin: 0 auto; width: 100%;
 }
 
-/* ── Hero Title ───────────────────────────────────────── */
-.landing-top {
-    text-align: center;
-    margin-bottom: 40px;
+/* ── Header ───────────────────────────────────────────── */
+.landing-header {
+    padding: 32px 24px 0;
 }
 
-.hero-title {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    margin-bottom: 14px;
-}
-
-.hero-line {
-    display: block;
+.brand {
+    font-family: var(--font);
+    font-size: 1.5rem;
     font-weight: 900;
     font-style: italic;
-    letter-spacing: -0.04em;
-    line-height: 0.92;
+    letter-spacing: -0.015em;
     color: var(--text);
     user-select: none;
 }
-.hero-line-1 {
-    font-size: clamp(3.2rem, 10vw, 5.5rem);
-    animation: hero-enter 900ms var(--ease-out) both;
-}
-.hero-line-2 {
-    font-size: clamp(3.8rem, 12vw, 6.5rem);
-    color: var(--gold);
-    animation: hero-enter 900ms 120ms var(--ease-out) both;
-}
 
-@keyframes hero-enter {
-    from { opacity: 0; transform: translateY(20px) scale(0.96); filter: blur(4px); }
-    to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-
-.hero-sub {
-    font-size: 14px;
-    color: var(--text-3);
-    letter-spacing: 0.06em;
-    animation: fade-up 700ms 400ms var(--ease-out) both;
-}
-
-/* ── Forms ─────────────────────────────────────────────── */
-.form-row {
+/* ── Choice Stack (quiz-app subject-style) ────────────── */
+.landing-center {
+    flex: 1;
     display: flex;
-    align-items: stretch;
-    gap: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+}
+
+.choice-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     width: 100%;
-    animation: fade-up 700ms 550ms var(--ease-out) both;
+}
+
+.choice-slot {
+    text-align: center;
+    transition: all 700ms var(--ease-out);
+    width: 100%;
+}
+
+.choice-slot.is-hidden {
+    opacity: 0;
+    transform: scale(0.85);
+    filter: blur(4px);
+    pointer-events: none;
+}
+
+.choice-label {
+    font-family: var(--font);
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: all 600ms var(--ease-out);
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+@media (hover: hover) {
+    .choice-label:hover {
+        opacity: 0.7;
+        transform: scale(1.04);
+    }
+}
+
+.choice-label:active { transform: scale(0.98); }
+
+.choice-slot.is-expanded .choice-label {
+    font-size: clamp(2.4rem, 8vw, 3.5rem);
+    color: var(--gold);
+}
+
+.choice-close {
+    font-family: var(--font);
+    font-size: 20px;
+    color: var(--text-4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 300ms;
+    animation: fade-in 500ms var(--ease-out) both;
+}
+.choice-close:hover { color: var(--text-2); }
+
+/* ── Form Panel (slides in like carousel) ─────────────── */
+.choice-form {
+    display: none;
+}
+
+.choice-slot.is-expanded .choice-form {
+    display: block;
+    animation: form-reveal 500ms var(--ease-out) both;
+}
+
+@keyframes form-reveal {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .card-form {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
     background: var(--surface);
-    padding: 22px 20px;
+    padding: 20px;
     border: 1px solid var(--border);
     border-radius: 14px;
+    margin-top: 16px;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
     transition: border-color 300ms;
 }
 .card-form:focus-within { border-color: var(--border-hi); }
 
-.form-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    margin-bottom: 2px;
-}
-
-.form-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    flex-shrink: 0;
-}
-.form-divider span {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--text-4);
-}
-
+/* ── Inputs ───────────────────────────────────────────── */
 input, select {
-    font: inherit; font-size: 14px;
+    font-family: var(--font);
+    font-size: 14px;
     padding: 11px 14px;
     border-radius: 8px;
     border: 1px solid var(--border);
@@ -181,7 +208,10 @@ input, select {
     transition: border-color 200ms, box-shadow 200ms;
     -webkit-appearance: none;
 }
-input::placeholder { color: var(--text-4); }
+input::placeholder {
+    font-family: var(--font);
+    color: var(--text-4);
+}
 input:focus, select:focus {
     outline: none;
     border-color: var(--gold-dim);
@@ -195,18 +225,22 @@ input:focus, select:focus {
     letter-spacing: 0.18em;
     text-transform: uppercase;
 }
-
-@media (max-width: 520px) {
-    .form-row { flex-direction: column; gap: 12px; }
-    .form-divider { width: auto; height: 0; }
-    .form-divider span { display: none; }
+.input-code::placeholder {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: normal;
 }
 
 /* ── Buttons ──────────────────────────────────────────── */
 .btn-gold {
-    font: inherit; font-size: 14px; font-weight: 700;
-    padding: 12px 20px; border-radius: 10px;
-    border: none; cursor: pointer;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
     background: var(--gold);
     color: #0c0c10;
     transition: all 200ms var(--ease-out);
@@ -228,25 +262,41 @@ input:focus, select:focus {
 
 .btn-wide { width: 100%; padding: 14px; font-size: 15px; margin-top: 12px; }
 
-/* ── Footer ───────────────────────────────────────────── */
+/* ── Footer (quiz-app 동일 사이즈) ────────────────────── */
 .site-footer {
     width: 100%;
-    padding-top: 48px;
-    text-align: center;
-    animation: fade-up 700ms 700ms var(--ease-out) both;
+    padding: 16px 24px 20px;
+}
+.footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
 }
 .footer-logo {
-    font: bold 20px/1 var(--mono);
-    color: var(--text-3);
-    letter-spacing: -0.02em;
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
     user-select: none;
 }
-.footer-logo sup { font-size: 0.65em; margin-left: 1px; }
-.footer-copy { font-size: 11px; color: var(--text-4); margin-top: 3px; }
+.footer-logo sup {
+    font-size: 0.7em;
+    margin-left: 2px;
+    font-weight: 600;
+}
+.footer-copy {
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--text-4);
+    margin-top: 1px;
+}
 
 
 /* ═══════════════════════════════════════════════════════
-   TOPBAR (shared by Lobby & Game)
+   TOPBAR (Lobby & Game)
    ═══════════════════════════════════════════════════════ */
 .topbar {
     display: flex; align-items: center; justify-content: space-between;
@@ -256,6 +306,7 @@ input:focus, select:focus {
 }
 
 .topbar-brand {
+    font-family: var(--font);
     font-size: 14px; font-weight: 800; font-style: italic;
     letter-spacing: -0.01em; color: var(--text-2);
     user-select: none;
@@ -272,9 +323,7 @@ input:focus, select:focus {
     border-radius: 6px;
 }
 
-.topbar-meta {
-    display: flex; gap: 8px;
-}
+.topbar-meta { display: flex; gap: 8px; }
 .chip-badge {
     font-size: 12px; font-weight: 500; color: var(--text-3);
     background: var(--surface);
@@ -294,14 +343,12 @@ input:focus, select:focus {
 .lobby-center {
     flex: 1;
     max-width: 480px;
-    margin: 0 auto;
-    width: 100%;
+    margin: 0 auto; width: 100%;
     padding: 32px 24px;
 }
 
 .lobby-waiting {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 13px; font-weight: 600;
     letter-spacing: 0.08em;
     color: var(--text-3);
     margin-bottom: 16px;
@@ -325,6 +372,7 @@ input:focus, select:focus {
 }
 
 .host-tag {
+    font-family: var(--font);
     font-size: 9px; font-weight: 900;
     letter-spacing: 0.14em;
     color: #0c0c10;
@@ -347,16 +395,13 @@ input:focus, select:focus {
 /* ═══════════════════════════════════════════════════════
    GAME TABLE
    ═══════════════════════════════════════════════════════ */
-
-/* Radial spotlight */
 .table-glow {
     position: fixed;
     top: 30%; left: 50%;
     width: 700px; height: 700px;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle, rgba(212,184,114,0.04) 0%, transparent 65%);
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
 }
 
 .table-body {
@@ -389,39 +434,25 @@ input:focus, select:focus {
 }
 .player-card:hover {
     transform: translateY(-2px);
-    box-shadow:
-        0 4px 0 rgba(0,0,0,0.12),
-        0 14px 36px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12), 0 14px 36px rgba(0,0,0,0.25);
 }
 
 .player-card.is-turn {
     border-color: var(--gold);
-    box-shadow:
-        0 0 0 1px var(--gold),
-        0 2px 0 rgba(212,184,114,0.15),
-        0 8px 32px rgba(212,184,114,0.12);
+    box-shadow: 0 0 0 1px var(--gold), 0 2px 0 rgba(212,184,114,0.15), 0 8px 32px rgba(212,184,114,0.12);
 }
 
-.player-card.is-me {
-    background: var(--surface-up);
-    border-color: var(--border-hi);
-}
-.player-card.is-me.is-turn {
-    border-color: var(--gold);
-}
+.player-card.is-me { background: var(--surface-up); border-color: var(--border-hi); }
+.player-card.is-me.is-turn { border-color: var(--gold); }
 
 .player-card .name {
     font-size: 13px; font-weight: 600;
     color: var(--text-2);
     margin-bottom: 4px;
-    letter-spacing: 0.01em;
 }
 
-/* The card number — physical playing card feel */
 .player-card .card-value {
-    font-size: 56px;
-    font-weight: 900;
-    font-style: italic;
+    font-size: 56px; font-weight: 900; font-style: italic;
     line-height: 1;
     margin: 10px 0;
     color: var(--text);
@@ -440,15 +471,8 @@ input:focus, select:focus {
     50%      { opacity: 0.7; }
 }
 
-.player-card .info {
-    font-size: 12px;
-    color: var(--text-3);
-    margin-top: 4px;
-}
-.player-card .info strong {
-    color: var(--text-2);
-    font-weight: 600;
-}
+.player-card .info { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.player-card .info strong { color: var(--text-2); font-weight: 600; }
 
 .status-tag {
     display: inline-block;
@@ -458,16 +482,8 @@ input:focus, select:focus {
     padding: 3px 10px;
     border-radius: 4px;
 }
-.status-tag.folded {
-    color: var(--red);
-    background: var(--red-bg);
-    border: 1px solid rgba(196,69,58,0.15);
-}
-.status-tag.eliminated {
-    color: var(--text-4);
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-}
+.status-tag.folded { color: var(--red); background: var(--red-bg); border: 1px solid rgba(196,69,58,0.15); }
+.status-tag.eliminated { color: var(--text-4); background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
 
 .turn-badge {
     position: absolute;
@@ -483,7 +499,6 @@ input:focus, select:focus {
     box-shadow: 0 1px 4px rgba(212,184,114,0.3);
 }
 
-
 /* ── Action Bar ───────────────────────────────────────── */
 #game-actions {
     display: flex; gap: 8px; flex-wrap: wrap;
@@ -492,7 +507,8 @@ input:focus, select:focus {
 }
 
 .btn-action {
-    font: inherit; font-size: 14px; font-weight: 700;
+    font-family: var(--font);
+    font-size: 14px; font-weight: 700;
     flex: 1; min-width: 80px;
     padding: 13px 18px;
     border-radius: 10px;
@@ -502,38 +518,29 @@ input:focus, select:focus {
     cursor: pointer;
     transition: all 180ms;
 }
-.btn-action:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-hi);
-}
+.btn-action:hover { background: var(--surface-hover); border-color: var(--border-hi); }
 .btn-action:active { transform: scale(0.97); }
 
-.btn-danger {
-    color: var(--red);
-    border-color: rgba(196,69,58,0.2);
-}
-.btn-danger:hover {
-    background: var(--red-bg);
-    border-color: rgba(196,69,58,0.35);
-}
+.btn-danger { color: var(--red); border-color: rgba(196,69,58,0.2); }
+.btn-danger:hover { background: var(--red-bg); border-color: rgba(196,69,58,0.35); }
 
-.raise-row {
-    display: flex; gap: 6px;
-    flex: 2; min-width: 180px;
-}
+.raise-row { display: flex; gap: 6px; flex: 2; min-width: 180px; }
 .raise-row input {
     flex: 1;
     font-family: var(--mono);
     font-size: 14px; font-weight: 600;
     letter-spacing: 0.04em;
 }
+.raise-row input::placeholder {
+    font-family: var(--font);
+    font-size: 14px; font-weight: 400;
+    letter-spacing: normal;
+}
 .raise-row .btn-gold { flex-shrink: 0; padding: 12px 22px; }
-
 
 /* ── Message Toast ────────────────────────────────────── */
 #game-message {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 14px; font-weight: 500;
     color: var(--text-2);
     padding: 14px 18px;
     background: var(--surface);
@@ -542,15 +549,17 @@ input:focus, select:focus {
     border-radius: 10px;
     transition: all 250ms;
 }
-#game-message:empty {
-    padding: 0; border: none;
-    background: transparent;
-}
+#game-message:empty { padding: 0; border: none; background: transparent; }
 
 
 /* ═══════════════════════════════════════════════════════
    ANIMATIONS
    ═══════════════════════════════════════════════════════ */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
 @keyframes fade-up {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -561,6 +570,11 @@ input:focus, select:focus {
     to   { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes card-enter {
+    from { opacity: 0; transform: translateY(18px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .animate-fade-in {
     animation: card-enter 450ms var(--ease-spring) both;
 }
@@ -568,14 +582,3 @@ input:focus, select:focus {
 .animate-fade-in:nth-child(2) { animation-delay: 80ms; }
 .animate-fade-in:nth-child(3) { animation-delay: 160ms; }
 .animate-fade-in:nth-child(4) { animation-delay: 240ms; }
-
-@keyframes card-enter {
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.94);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}

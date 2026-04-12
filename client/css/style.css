@@ -101,6 +101,7 @@ body {
     letter-spacing: -0.04em;
     line-height: 0.92;
     user-select: none;
+    padding: 0 0.08em; /* room for italic overhang */
 }
 .hero-line-1 {
     font-size: clamp(2.8rem, 9vw, 4.2rem);

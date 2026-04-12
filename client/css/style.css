@@ -76,107 +76,129 @@ body {
     max-width: 720px; margin: 0 auto; width: 100%;
 }
 
-/* ── Header ───────────────────────────────────────────── */
-.landing-header {
-    padding: 32px 24px 0;
-}
-
-.brand {
-    font-family: var(--font);
-    font-size: 1.5rem;
-    font-weight: 900;
-    font-style: italic;
-    letter-spacing: -0.015em;
-    color: var(--text);
-    user-select: none;
-}
-
-/* ── Choice Stack (quiz-app subject-style) ────────────── */
+/* ── Landing Center ────────────────────────────────────── */
 .landing-center {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 0 24px;
+    gap: 0;
 }
 
-.choice-stack {
+/* ── Hero Title (centered, two-line) ──────────────────── */
+.hero-title {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    margin-bottom: 48px;
+}
+
+.hero-line {
+    display: block;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    user-select: none;
+}
+.hero-line-1 {
+    font-size: clamp(3.2rem, 10vw, 5.5rem);
+    color: var(--text);
+    animation: hero-enter 900ms var(--ease-out) both;
+}
+.hero-line-2 {
+    font-size: clamp(3.8rem, 12vw, 6.5rem);
+    color: var(--gold);
+    animation: hero-enter 900ms 120ms var(--ease-out) both;
+}
+
+@keyframes hero-enter {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* ── Choice Row (horizontal, slightly below center) ───── */
+.choice-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 40px;
     width: 100%;
+    margin-top: 8px;
+    animation: fade-up 700ms 400ms var(--ease-out) both;
 }
 
 .choice-slot {
     text-align: center;
     transition: all 700ms var(--ease-out);
-    width: 100%;
 }
 
 .choice-slot.is-hidden {
     opacity: 0;
-    transform: scale(0.85);
+    transform: scale(0.88);
     filter: blur(4px);
     pointer-events: none;
 }
 
 .choice-label {
     font-family: var(--font);
-    font-size: clamp(2.2rem, 7vw, 3.2rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--text);
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-2);
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px 16px;
+    padding: 6px 4px;
     transition: all 600ms var(--ease-out);
     user-select: none;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 @media (hover: hover) {
     .choice-label:hover {
-        opacity: 0.7;
-        transform: scale(1.04);
+        color: var(--text);
+        transform: scale(1.06);
     }
 }
 
-.choice-label:active { transform: scale(0.98); }
+.choice-label:active { transform: scale(0.97); }
 
 .choice-slot.is-expanded .choice-label {
-    font-size: clamp(2.4rem, 8vw, 3.5rem);
     color: var(--gold);
+    transform: scale(1.06);
 }
 
 .choice-close {
     font-family: var(--font);
-    font-size: 20px;
+    font-size: 16px;
     color: var(--text-4);
     background: none;
     border: none;
     cursor: pointer;
     padding: 4px;
-    transition: color 300ms;
+    transition: all 500ms var(--ease-out);
     animation: fade-in 500ms var(--ease-out) both;
 }
 .choice-close:hover { color: var(--text-2); }
 
-/* ── Form Panel (slides in like carousel) ─────────────── */
+/* ── Form Panel ───────────────────────────────────────── */
 .choice-form {
     display: none;
 }
 
 .choice-slot.is-expanded .choice-form {
     display: block;
-    animation: form-reveal 500ms var(--ease-out) both;
+    animation: form-reveal 600ms var(--ease-out) both;
+    animation-delay: 150ms;
 }
 
 @keyframes form-reveal {
-    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -189,7 +211,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 14px;
     margin-top: 16px;
-    max-width: 360px;
+    max-width: 320px;
     margin-left: auto;
     margin-right: auto;
     transition: border-color 300ms;

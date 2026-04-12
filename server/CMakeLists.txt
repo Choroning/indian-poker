@@ -30,6 +30,7 @@ add_library(ip_core STATIC
     net/connection.cpp
     net/event_loop.cpp
     net/ws_handshake.cpp
+    net/ws_frame.cpp
 )
 target_include_directories(ip_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ip_core PUBLIC OpenSSL::Crypto nlohmann_json::nlohmann_json)

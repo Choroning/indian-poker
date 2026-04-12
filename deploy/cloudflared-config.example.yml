@@ -1,0 +1,11 @@
+# Copy this to ~/.cloudflared/config.yml and replace the placeholders.
+tunnel: REPLACE_WITH_YOUR_TUNNEL_ID
+credentials-file: /Users/you/.cloudflared/REPLACE_WITH_YOUR_TUNNEL_ID.json
+
+ingress:
+  - hostname: game.REPLACE_WITH_YOUR_DOMAIN
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+  - service: http_status:404

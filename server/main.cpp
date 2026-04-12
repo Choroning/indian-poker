@@ -43,22 +43,31 @@ int main() {
                     std::string leftover = s.pending.substr(r.consumed);
                     s.pending.clear();
                     if (!leftover.empty()) {
-                        auto dec = s.decoder.feed(leftover.data(), leftover.size());
-                        if (dec.status == ip::net::DecodeStatus::MessageReady) {
+                        s.decoder.feed(leftover.data(), leftover.size());
+                    }
+                } else {
+                    s.decoder.feed(chunk.data(), chunk.size());
+                }
+
+                // Drain all fully-buffered messages.
+                while (true) {
+                    auto dec = s.decoder.feed(nullptr, 0);
+                    if (dec.status == ip::net::DecodeStatus::MessageReady) {
+                        if (dec.opcode == ip::net::Opcode::Text) {
                             auto out = ip::net::encode_text(dec.message);
                             loop.send_to(fd, std::string(out.begin(), out.end()));
+                        } else if (dec.opcode == ip::net::Opcode::Ping) {
+                            auto pong = ip::net::encode_control(ip::net::Opcode::Pong, dec.message);
+                            loop.send_to(fd, std::string(pong.begin(), pong.end()));
+                        } else if (dec.opcode == ip::net::Opcode::Close) {
+                            auto cl = ip::net::encode_control(ip::net::Opcode::Close, "");
+                            loop.send_to(fd, std::string(cl.begin(), cl.end()));
+                            loop.close(fd);
+                            return;
                         }
+                        continue;
                     }
-                    return;
-                }
-                auto dec = s.decoder.feed(chunk.data(), chunk.size());
-                if (dec.status == ip::net::DecodeStatus::MessageReady) {
-                    std::cerr << "[ip_server] text fd=" << fd << " msg=" << dec.message << "\n";
-                    auto out = ip::net::encode_text(dec.message);
-                    loop.send_to(fd, std::string(out.begin(), out.end()));
-                } else if (dec.status == ip::net::DecodeStatus::Error) {
-                    std::cerr << "[ip_server] decode error: " << dec.error_reason << "\n";
-                    loop.close(fd);
+                    break;
                 }
             },
             [&states](int fd) { states.erase(fd); }

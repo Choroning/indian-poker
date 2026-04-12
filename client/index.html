@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Indian Poker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main id="app">
+        <section id="landing" class="screen">
+            <h1>Indian Poker</h1>
+            <form id="form-create">
+                <h2>Create a room</h2>
+                <input name="nickname" placeholder="nickname" required maxlength="16">
+                <select name="max_players">
+                    <option value="2">2 players</option>
+                    <option value="3">3 players</option>
+                    <option value="4" selected>4 players</option>
+                </select>
+                <button type="submit">Create</button>
+            </form>
+            <form id="form-join">
+                <h2>Join a room</h2>
+                <input name="room_code" placeholder="ABCDEF" required maxlength="6" pattern="[A-Z2-9]{6}" autocapitalize="characters">
+                <input name="nickname" placeholder="nickname" required maxlength="16">
+                <button type="submit">Join</button>
+            </form>
+        </section>
+        <section id="lobby" class="screen hidden">
+            <h2>Room <span id="lobby-code"></span></h2>
+            <ul id="lobby-players"></ul>
+            <button id="btn-start" hidden>Start game</button>
+        </section>
+        <section id="game" class="screen hidden">
+            <header>
+                <span>Room <strong id="game-code"></strong></span>
+                <span>Hand <span id="game-hand"></span></span>
+                <span>Pot: <span id="game-pot">0</span></span>
+            </header>
+            <div id="game-players"></div>
+            <div id="game-actions" class="hidden">
+                <button data-action="check">Check</button>
+                <button data-action="fold">Fold</button>
+                <input id="raise-amount" type="number" min="0" step="5" placeholder="raise to">
+                <button data-action="raise">Raise</button>
+            </div>
+            <div id="game-message"></div>
+        </section>
+    </main>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

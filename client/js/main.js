@@ -12,12 +12,13 @@ async function ensureOpen() {
 /* ── Landing: quiz-app style expand/collapse ──────────── */
 const slotCreate = document.getElementById("slot-create");
 const slotJoin = document.getElementById("slot-join");
+const heroTitle = document.querySelector(".hero-title");
 let expandedSlot = null;
 
 function collapseAll() {
     slotCreate.classList.remove("is-expanded", "is-hidden");
     slotJoin.classList.remove("is-expanded", "is-hidden");
-    // Remove close buttons
+    if (heroTitle) heroTitle.classList.remove("pushed-up");
     for (const btn of document.querySelectorAll(".choice-close")) btn.remove();
     expandedSlot = null;
 }
@@ -28,8 +29,8 @@ function expandSlot(slot) {
     slot.classList.remove("is-hidden");
     other.classList.add("is-hidden");
     other.classList.remove("is-expanded");
+    if (heroTitle) heroTitle.classList.add("pushed-up");
 
-    // Add close button next to label if not already present
     const label = slot.querySelector(".choice-label");
     if (!slot.querySelector(".choice-close")) {
         const close = document.createElement("button");

@@ -84,7 +84,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0 24px;
-    gap: 0;
+    padding-bottom: 10vh;
 }
 
 /* ── Hero Title (centered, two-line) ──────────────────── */
@@ -92,7 +92,15 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 48px;
+    margin-bottom: 56px;
+    transition: all 700ms var(--ease-out);
+}
+
+.hero-title.pushed-up {
+    transform: translateY(-32px);
+    opacity: 0.5;
+    filter: blur(2px);
+    pointer-events: none;
 }
 
 .hero-line {
@@ -104,12 +112,12 @@ body {
     user-select: none;
 }
 .hero-line-1 {
-    font-size: clamp(3.2rem, 10vw, 5.5rem);
+    font-size: clamp(2.4rem, 8vw, 3.8rem);
     color: var(--text);
     animation: hero-enter 900ms var(--ease-out) both;
 }
 .hero-line-2 {
-    font-size: clamp(3.8rem, 12vw, 6.5rem);
+    font-size: clamp(2.8rem, 9vw, 4.4rem);
     color: var(--gold);
     animation: hero-enter 900ms 120ms var(--ease-out) both;
 }
@@ -119,14 +127,14 @@ body {
     to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
-/* ── Choice Row (horizontal, slightly below center) ───── */
+/* ── Choice Row ───────────────────────────────────────── */
 .choice-row {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 40px;
+    gap: 48px;
     width: 100%;
-    margin-top: 8px;
     animation: fade-up 700ms 400ms var(--ease-out) both;
 }
 
@@ -135,18 +143,28 @@ body {
     transition: all 700ms var(--ease-out);
 }
 
+/* When a slot is hidden, fade+blur out */
 .choice-slot.is-hidden {
     opacity: 0;
     transform: scale(0.88);
     filter: blur(4px);
     pointer-events: none;
+    position: absolute;
+}
+
+/* When expanded, center itself */
+.choice-slot.is-expanded {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .choice-label {
     font-family: var(--font);
-    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     color: var(--text-2);
     background: none;
     border: none;
@@ -175,7 +193,7 @@ body {
 
 .choice-close {
     font-family: var(--font);
-    font-size: 16px;
+    font-size: 18px;
     color: var(--text-4);
     background: none;
     border: none;

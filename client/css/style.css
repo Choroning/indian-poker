@@ -101,7 +101,7 @@ body {
     letter-spacing: -0.04em;
     line-height: 0.92;
     user-select: none;
-    padding: 0 0.08em; /* room for italic overhang */
+    padding: 0 0.15em; /* room for italic overhang */
 }
 .hero-line-1 {
     font-size: clamp(2.8rem, 9vw, 4.2rem);
@@ -197,30 +197,28 @@ body {
 .choice-close:hover { color: var(--text-2); }
 
 /* ── Form Panel (no display:none — pure opacity/transform) ── */
+/* Form anchored to viewport center, not to slot */
 .choice-form {
-    position: absolute;
+    position: fixed;
     left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    width: 320px;
+    top: calc(50% + 90px);
+    transform: translateX(-50%) translateY(16px);
+    width: 280px;
     opacity: 0;
     visibility: hidden;
-    max-height: 0;
-    overflow: hidden;
     transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
                 transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
-                max-height 600ms cubic-bezier(0.22, 1, 0.36, 1),
-                visibility 0ms 600ms;
+                visibility 0ms 500ms;
+    z-index: 10;
 }
 
 .choice-slot.is-expanded .choice-form {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
-    max-height: 320px;
-    transition: opacity 600ms 600ms cubic-bezier(0.22, 1, 0.36, 1),
-                transform 600ms 600ms cubic-bezier(0.22, 1, 0.36, 1),
-                max-height 700ms 500ms cubic-bezier(0.22, 1, 0.36, 1),
-                visibility 0ms 500ms;
+    transition: opacity 600ms 550ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 600ms 550ms cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0ms 550ms;
 }
 
 .card-form {
@@ -228,13 +226,9 @@ body {
     flex-direction: column;
     gap: 10px;
     background: var(--surface);
-    padding: 20px;
+    padding: 18px;
     border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-top: 16px;
-    max-width: 320px;
-    margin-left: auto;
-    margin-right: auto;
+    border-radius: 12px;
     transition: border-color 300ms;
 }
 .card-form:focus-within { border-color: var(--border-hi); }

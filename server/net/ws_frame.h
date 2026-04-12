@@ -15,11 +15,7 @@ enum class Opcode : uint8_t {
     Pong = 0xA,
 };
 
-enum class DecodeStatus {
-    NeedMore,     // not enough bytes yet
-    MessageReady, // one complete logical message decoded
-    Error,        // protocol error (unmasked client frame, bad opcode, etc.)
-};
+enum class DecodeStatus { NeedMore, MessageReady, Error };
 
 struct DecodeResult {
     DecodeStatus status = DecodeStatus::NeedMore;
@@ -29,18 +25,30 @@ struct DecodeResult {
     std::string error_reason;
 };
 
-// Decodes a stream of WebSocket frames into messages. For milestone M3 only
-// non-fragmented frames are supported; any continuation frame or FIN=0 returns
-// an error. Milestone M4 extends this class to reassemble fragments.
+// Reassembles fragmented data messages and exposes control frames separately.
+// Control frames (ping/pong/close) are never fragmented per RFC; they may appear
+// in between fragments of a data message.
 class FrameDecoder {
 public:
     DecodeResult feed(const char* data, std::size_t len);
 
 private:
     std::vector<uint8_t> buf_;
+    std::string pending_msg_;   // bytes of an in-progress fragmented message
+    Opcode pending_opcode_ = Opcode::Text;
+    bool in_fragment_ = false;
 };
 
-// Encodes `payload` as a single unmasked server text frame.
+// Encode helpers: single frame, unmasked (server->client).
 std::vector<char> encode_text(const std::string& payload);
+
+// Encodes a control frame with the given opcode (Close, Ping, or Pong).
+std::vector<char> encode_control(Opcode opcode, const std::string& payload);
+
+// Splits `payload` into N server frames of up to `chunk_size` bytes each.
+// The first frame carries opcode=Text with FIN=0, middle frames carry
+// Continuation with FIN=0, final frame carries Continuation with FIN=1.
+// Single-chunk payloads return a single frame with FIN=1, opcode=Text.
+std::vector<std::vector<char>> encode_text_fragmented(const std::string& payload, std::size_t chunk_size);
 
 } // namespace ip::net

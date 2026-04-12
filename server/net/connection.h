@@ -20,6 +20,10 @@ public:
     int fd() const { return fd_; }
     bool closed() const { return fd_ < 0; }
 
+    enum class Phase { Http, WebSocket };
+    Phase phase() const { return phase_; }
+    void set_phase(Phase p) { phase_ = p; }
+
     // Reads up to 4 KiB into the internal read buffer. Returns the number of
     // bytes read (possibly 0 on a clean remote close, in which case the
     // connection is marked closed). Returns -1 on EAGAIN.
@@ -41,6 +45,7 @@ public:
     void close();
 
 private:
+    Phase phase_ = Phase::Http;
     int fd_ = -1;
     std::vector<char> out_;
     std::string in_;

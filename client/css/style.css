@@ -163,12 +163,10 @@ body {
     cursor: pointer;
     padding: 6px 4px;
     white-space: nowrap;
+    position: relative;
     transition: color 500ms cubic-bezier(0.22, 1, 0.36, 1),
                 transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
     user-select: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
 }
 
 @media (hover: hover) {
@@ -183,12 +181,15 @@ body {
 }
 
 .choice-close {
-    font-size: 0.7em;
+    position: absolute;
+    right: -1.2em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.65em;
     color: var(--text-4);
     cursor: pointer;
     opacity: 0;
     transition: opacity 400ms, color 300ms;
-    margin-left: 2px;
 }
 .choice-close.visible { opacity: 1; }
 .choice-close:hover { color: var(--text-2); }

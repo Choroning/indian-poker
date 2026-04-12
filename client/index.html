@@ -9,88 +9,90 @@
 </head>
 <body>
     <div id="app">
-        <!-- Landing -->
+
+        <!-- ═══ Landing ═══ -->
         <section id="landing" class="screen">
-            <header class="landing-header">
-                <span class="brand">Indian Poker</span>
-            </header>
+            <div class="landing-grain"></div>
+            <div class="landing-content">
+                <div class="landing-top">
+                    <h1 class="hero-title">
+                        <span class="hero-line hero-line-1">Indian</span>
+                        <span class="hero-line hero-line-2">Poker</span>
+                    </h1>
+                    <p class="hero-sub">방을 만들거나 코드를 입력해 참가하세요</p>
+                </div>
 
-            <div class="landing-body">
-                <p class="landing-subtitle">방을 만들거나 코드를 입력해 참가하세요</p>
-
-                <div class="form-group">
-                    <form id="form-create">
-                        <h2>방 만들기</h2>
+                <div class="form-row">
+                    <form id="form-create" class="card-form">
+                        <div class="form-label">방 만들기</div>
                         <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
                         <select name="max_players">
-                            <option value="2">2명</option>
-                            <option value="3">3명</option>
-                            <option value="4" selected>4명</option>
+                            <option value="2">2인</option>
+                            <option value="3">3인</option>
+                            <option value="4" selected>4인</option>
                         </select>
-                        <button type="submit">만들기</button>
+                        <button type="submit" class="btn-gold">만들기</button>
                     </form>
-
-                    <form id="form-join">
-                        <h2>참가하기</h2>
-                        <input name="room_code" placeholder="방 코드 (6자리)" required maxlength="6" pattern="[A-Z2-9]{6}" autocapitalize="characters" autocomplete="off">
+                    <div class="form-divider"><span>OR</span></div>
+                    <form id="form-join" class="card-form">
+                        <div class="form-label">참가하기</div>
+                        <input name="room_code" placeholder="방 코드" required maxlength="6" pattern="[A-Z2-9]{6}" autocapitalize="characters" autocomplete="off" class="input-code">
                         <input name="nickname" placeholder="닉네임" required maxlength="16" autocomplete="off">
-                        <button type="submit">참가</button>
+                        <button type="submit" class="btn-gold">참가</button>
                     </form>
                 </div>
-            </div>
 
-            <footer class="site-footer">
-                <div class="footer-inner">
-                    <div class="footer-left">
-                        <span class="footer-logo">crns<sup>&reg;</sup></span>
-                        <p class="footer-copy">&copy; 2026 Cheolwon Park. All rights reserved.</p>
-                    </div>
-                </div>
-            </footer>
+                <footer class="site-footer">
+                    <span class="footer-logo">crns<sup>&reg;</sup></span>
+                    <p class="footer-copy">&copy; 2026 Cheolwon Park. All rights reserved.</p>
+                </footer>
+            </div>
         </section>
 
-        <!-- Lobby -->
+        <!-- ═══ Lobby ═══ -->
         <section id="lobby" class="screen hidden">
-            <header class="screen-header">
-                <span class="brand-sm">Indian Poker</span>
-                <span class="room-badge" id="lobby-badge"></span>
-            </header>
+            <div class="lobby-shell">
+                <header class="topbar">
+                    <span class="topbar-brand">Indian Poker</span>
+                    <span class="topbar-code" id="lobby-badge"></span>
+                </header>
 
-            <div class="lobby-body">
-                <h2 class="lobby-title">대기실</h2>
-                <ul id="lobby-players"></ul>
-                <button id="btn-start" class="btn-primary" hidden>게임 시작</button>
+                <div class="lobby-center">
+                    <p class="lobby-waiting">플레이어 대기 중</p>
+                    <ul id="lobby-players"></ul>
+                    <button id="btn-start" class="btn-gold btn-wide" hidden>게임 시작</button>
+                </div>
             </div>
         </section>
 
-        <!-- Game -->
+        <!-- ═══ Game ═══ -->
         <section id="game" class="screen hidden">
-            <header class="screen-header">
-                <span class="brand-sm">Indian Poker</span>
-                <div class="game-meta">
-                    <span class="meta-item">핸드 <strong id="game-hand">1</strong></span>
-                    <span class="meta-divider"></span>
-                    <span class="meta-item">팟 <strong id="game-pot">0</strong></span>
+            <div class="table-glow"></div>
+            <header class="topbar">
+                <span class="topbar-brand">Indian Poker</span>
+                <div class="topbar-meta">
+                    <span class="chip-badge">핸드 <b id="game-hand">1</b></span>
+                    <span class="chip-badge chip-pot">팟 <b id="game-pot">0</b></span>
                 </div>
             </header>
 
-            <div class="game-body">
+            <div class="table-body">
                 <div id="game-players"></div>
 
                 <div id="game-actions" class="hidden">
                     <button data-action="check" class="btn-action">체크</button>
-                    <button data-action="fold" class="btn-action btn-fold">폴드</button>
-                    <div class="raise-group">
-                        <input id="raise-amount" type="number" min="0" step="5" placeholder="레이즈 금액">
-                        <button data-action="raise" class="btn-action btn-raise">레이즈</button>
+                    <button data-action="fold" class="btn-action btn-danger">폴드</button>
+                    <div class="raise-row">
+                        <input id="raise-amount" type="number" min="0" step="5" placeholder="금액">
+                        <button data-action="raise" class="btn-gold">레이즈</button>
                     </div>
                 </div>
 
                 <div id="game-message"></div>
             </div>
         </section>
-    </div>
 
+    </div>
     <script src="js/config.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>

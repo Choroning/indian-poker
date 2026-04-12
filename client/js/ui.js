@@ -7,9 +7,17 @@ export function renderLobby(state) {
     document.getElementById("lobby-badge").textContent = state.room_code;
     const ul = document.getElementById("lobby-players");
     ul.innerHTML = "";
-    for (const nick of state.players) {
+    state.players.forEach((nick, i) => {
         const li = document.createElement("li");
-        li.textContent = nick;
+        li.style.animationDelay = `${i * 60}ms`;
+
+        const dot = document.createElement("span");
+        dot.className = "seat-dot";
+        li.appendChild(dot);
+
+        const name = document.createTextNode(nick);
+        li.appendChild(name);
+
         if (nick === state.host) {
             const tag = document.createElement("span");
             tag.className = "host-tag";
@@ -17,7 +25,7 @@ export function renderLobby(state) {
             li.appendChild(tag);
         }
         ul.appendChild(li);
-    }
+    });
 }
 
 export function renderGame(state, me) {
@@ -27,7 +35,7 @@ export function renderGame(state, me) {
     const container = document.getElementById("game-players");
     container.innerHTML = "";
 
-    for (const p of state.players) {
+    state.players.forEach((p) => {
         const div = document.createElement("div");
         div.className = "player-card animate-fade-in";
         if (p.nickname === me) div.classList.add("is-me");
@@ -60,7 +68,7 @@ export function renderGame(state, me) {
             ${statusHtml}
         `;
         container.appendChild(div);
-    }
+    });
 
     const actions = document.getElementById("game-actions");
     if (state.current_turn === me && state.phase === "BETTING") {

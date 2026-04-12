@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Indian Poker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="css/style.css?v=22">
+    <link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body>
     <div id="app">
@@ -60,9 +60,13 @@
 
         <!-- ═══ Lobby ═══ -->
         <section id="lobby" class="screen hidden">
+            <div class="landing-grain"></div>
             <div class="lobby-shell">
                 <header class="topbar">
-                    <span class="topbar-brand">Indian Poker</span>
+                    <div class="topbar-title">
+                        <span class="topbar-title-1">Indian</span>
+                        <span class="topbar-title-2">Poker</span>
+                    </div>
                     <span class="topbar-code" id="lobby-badge"></span>
                 </header>
 
@@ -77,8 +81,12 @@
         <!-- ═══ Game ═══ -->
         <section id="game" class="screen hidden">
             <div class="table-glow"></div>
+            <div class="landing-grain"></div>
             <header class="topbar">
-                <span class="topbar-brand">Indian Poker</span>
+                <div class="topbar-title">
+                    <span class="topbar-title-1">Indian</span>
+                    <span class="topbar-title-2">Poker</span>
+                </div>
                 <div class="topbar-meta">
                     <span class="chip-badge">핸드 <b id="game-hand">1</b></span>
                     <span class="chip-badge chip-pot">팟 <b id="game-pot">0</b></span>

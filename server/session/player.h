@@ -4,6 +4,8 @@
 
 namespace ip::session {
 
+bool validate_nickname(const std::string& s);
+
 enum class ConnState { New, Connected, DisconnectedGrace };
 
 class Player {

@@ -72,3 +72,14 @@ TEST_CASE("RoomRegistry rejects duplicate codes", "[registry]") {
     reg.create("ABCDEF", 4);
     REQUIRE(reg.create("ABCDEF", 4) == nullptr);
 }
+
+TEST_CASE("nickname validator", "[nickname]") {
+    REQUIRE(validate_nickname("alice"));
+    REQUIRE(validate_nickname("밥"));
+    REQUIRE(validate_nickname("user_1"));
+    REQUIRE_FALSE(validate_nickname(""));
+    REQUIRE_FALSE(validate_nickname(std::string(17, 'x'))); // > 16
+    REQUIRE_FALSE(validate_nickname(" alice"));  // leading space
+    REQUIRE_FALSE(validate_nickname("alice "));  // trailing space
+    REQUIRE_FALSE(validate_nickname("al\tice")); // control
+}

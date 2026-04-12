@@ -15,22 +15,38 @@ const slotJoin = document.getElementById("slot-join");
 const choiceRow = document.querySelector(".choice-row");
 let expandedSlot = null;
 
+function getSlideOffset(slot) {
+    const rowRect = choiceRow.getBoundingClientRect();
+    const labelRect = slot.querySelector(".choice-label").getBoundingClientRect();
+    const rowCenter = rowRect.left + rowRect.width / 2;
+    const labelCenter = labelRect.left + labelRect.width / 2;
+    return rowCenter - labelCenter;
+}
+
 function collapseAll() {
+    slotCreate.style.transform = "";
+    slotJoin.style.transform = "";
     slotCreate.classList.remove("is-expanded", "is-hidden");
     slotJoin.classList.remove("is-expanded", "is-hidden");
-    choiceRow.classList.remove("has-expanded");
-    for (const btn of document.querySelectorAll(".choice-close")) btn.remove();
+    for (const btn of document.querySelectorAll(".choice-close")) {
+        btn.classList.remove("visible");
+        setTimeout(() => btn.remove(), 400);
+    }
     expandedSlot = null;
 }
 
 function expandSlot(slot) {
     const other = slot === slotCreate ? slotJoin : slotCreate;
-    slot.classList.add("is-expanded");
-    slot.classList.remove("is-hidden");
-    other.classList.add("is-hidden");
-    other.classList.remove("is-expanded");
-    choiceRow.classList.add("has-expanded");
 
+    // Calculate offset before adding classes (layout might shift)
+    const offset = getSlideOffset(slot);
+
+    other.classList.add("is-hidden");
+    slot.classList.add("is-expanded");
+    slot.style.transform = `translateX(${offset}px)`;
+    other.style.transform = "";
+
+    // Add close button
     const label = slot.querySelector(".choice-label");
     if (!slot.querySelector(".choice-close")) {
         const close = document.createElement("button");
@@ -39,6 +55,7 @@ function expandSlot(slot) {
         close.setAttribute("aria-label", "닫기");
         close.addEventListener("click", (e) => { e.stopPropagation(); collapseAll(); });
         label.after(close);
+        requestAnimationFrame(() => requestAnimationFrame(() => close.classList.add("visible")));
     }
     expandedSlot = slot;
 }

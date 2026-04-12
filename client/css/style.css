@@ -122,29 +122,23 @@ body {
 .choice-row {
     position: absolute;
     left: 24px; right: 24px;
-    top: calc(50% + 30px);
+    top: calc(50% + 50px);
     display: flex;
     align-items: flex-start;
     justify-content: center;
     gap: 48px;
-    transition: gap 700ms cubic-bezier(0.22, 1, 0.36, 1);
     animation: fade-up 700ms 400ms var(--ease-out) both;
-}
-
-.choice-row.has-expanded {
-    gap: 0;
 }
 
 .choice-slot {
     text-align: center;
-    transition: width 700ms cubic-bezier(0.22, 1, 0.36, 1),
-                opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
-                filter 600ms cubic-bezier(0.22, 1, 0.36, 1);
-    overflow: hidden;
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+                filter 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity, filter;
 }
 
 .choice-slot.is-hidden {
-    width: 0 !important;
     opacity: 0;
     filter: blur(4px);
     pointer-events: none;
@@ -167,8 +161,8 @@ body {
     cursor: pointer;
     padding: 6px 4px;
     white-space: nowrap;
-    transition: color 600ms cubic-bezier(0.22, 1, 0.36, 1),
-                transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: color 500ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
     user-select: none;
     display: inline-flex;
     align-items: center;
@@ -178,15 +172,12 @@ body {
 @media (hover: hover) {
     .choice-label:hover {
         color: var(--text);
-        transform: scale(1.06);
+        transform: scale(1.05);
     }
 }
 
-.choice-label:active { transform: scale(0.97); }
-
 .choice-slot.is-expanded .choice-label {
     color: var(--gold);
-    transform: scale(1.06);
 }
 
 .choice-close {
@@ -197,25 +188,34 @@ body {
     border: none;
     cursor: pointer;
     padding: 4px;
-    transition: all 500ms var(--ease-out);
-    animation: fade-in 500ms var(--ease-out) both;
+    opacity: 0;
+    transition: opacity 400ms, color 300ms;
 }
+.choice-close.visible { opacity: 1; }
 .choice-close:hover { color: var(--text-2); }
 
-/* ── Form Panel ───────────────────────────────────────── */
+/* ── Form Panel (no display:none — pure opacity/transform) ── */
 .choice-form {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
+                max-height 600ms cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0ms 600ms;
 }
 
 .choice-slot.is-expanded .choice-form {
-    display: block;
-    animation: form-reveal 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 200ms;
-}
-
-@keyframes form-reveal {
-    from { opacity: 0; transform: translateY(24px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    max-height: 320px;
+    transition: opacity 600ms 180ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 600ms 180ms cubic-bezier(0.22, 1, 0.36, 1),
+                max-height 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0ms 0ms;
 }
 
 .card-form {

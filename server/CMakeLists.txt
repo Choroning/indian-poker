@@ -31,6 +31,9 @@ add_library(ip_core STATIC
     net/event_loop.cpp
     net/ws_handshake.cpp
     net/ws_frame.cpp
+    session/player.cpp
+    session/room.cpp
+    session/room_registry.cpp
 )
 target_include_directories(ip_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ip_core PUBLIC OpenSSL::Crypto nlohmann_json::nlohmann_json)

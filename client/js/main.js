@@ -30,7 +30,8 @@ function collapseAll() {
     slotJoin.classList.remove("is-expanded", "is-hidden");
     for (const btn of document.querySelectorAll(".choice-close")) {
         btn.classList.remove("visible");
-        setTimeout(() => btn.remove(), 400);
+        const el = btn;
+        setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
     }
     expandedSlot = null;
 }
@@ -48,13 +49,14 @@ function expandSlot(slot) {
 
     // Add close button
     const label = slot.querySelector(".choice-label");
-    if (!slot.querySelector(".choice-close")) {
-        const close = document.createElement("button");
+    if (!label.querySelector(".choice-close")) {
+        const close = document.createElement("span");
         close.className = "choice-close";
         close.textContent = "\u2715";
+        close.setAttribute("role", "button");
         close.setAttribute("aria-label", "닫기");
         close.addEventListener("click", (e) => { e.stopPropagation(); collapseAll(); });
-        label.after(close);
+        label.appendChild(close);
         requestAnimationFrame(() => requestAnimationFrame(() => close.classList.add("visible")));
     }
     expandedSlot = slot;

@@ -5,6 +5,7 @@ add_executable(ip_tests
     test_ws_frame.cpp
     test_ws_frame_fragments.cpp
     test_player_room.cpp
+    test_room_code.cpp
 )
 target_link_libraries(ip_tests PRIVATE ip_core Catch2::Catch2WithMain)
 target_include_directories(ip_tests PRIVATE ${CMAKE_SOURCE_DIR})

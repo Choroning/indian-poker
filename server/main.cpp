@@ -9,6 +9,7 @@
 #include "net/ws_frame.h"
 #include "net/ws_handshake.h"
 #include "session/router.h"
+#include "util/origin.h"
 
 namespace {
 struct ConnState {
@@ -27,6 +28,11 @@ uint64_t now_ms() {
 int main() {
     const char* port_env = std::getenv("IP_PORT");
     uint16_t port = static_cast<uint16_t>(port_env ? std::atoi(port_env) : 8080);
+
+    static const ip::util::OriginAllowlist kOrigins({
+        "http://localhost:3000",
+        "http://localhost:8080",
+    });
 
     try {
         ip::net::TCPListener listener(port);
@@ -55,6 +61,11 @@ int main() {
                     if (r.status == ip::net::HandshakeStatus::NeedMore) return;
                     if (r.status == ip::net::HandshakeStatus::Invalid) {
                         loop_ptr->send_to(fd, "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n");
+                        loop_ptr->close(fd);
+                        return;
+                    }
+                    if (!kOrigins.allows(r.origin)) {
+                        loop_ptr->send_to(fd, "HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
                         loop_ptr->close(fd);
                         return;
                     }

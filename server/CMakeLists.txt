@@ -32,6 +32,7 @@ add_library(ip_core STATIC
     net/ws_handshake.cpp
     net/ws_frame.cpp
     util/random.cpp
+    util/origin.cpp
     session/player.cpp
     session/room.cpp
     session/room_registry.cpp

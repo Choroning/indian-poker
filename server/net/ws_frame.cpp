@@ -42,6 +42,8 @@ RawStatus parse_one_frame(const std::vector<uint8_t>& buf, RawFrame& out, std::s
         header += 8;
     }
 
+    if (payload_len > 4096) { err = "payload too large"; return RawStatus::Error; }
+
     // Control frames must be <= 125 bytes and FIN=1 per RFC.
     bool is_control = (opcode & 0x08) != 0;
     if (is_control) {

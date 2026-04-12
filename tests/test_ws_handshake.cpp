@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "net/ws_handshake.h"
+#include "util/origin.h"
 
 using namespace ip::net;
 
@@ -49,4 +50,12 @@ TEST_CASE("build_response contains Sec-WebSocket-Accept", "[handshake]") {
     REQUIRE(response.find("Upgrade: websocket") != std::string::npos);
     REQUIRE(response.find("Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=") != std::string::npos);
     REQUIRE(response.find("\r\n\r\n") != std::string::npos);
+}
+
+TEST_CASE("origin allowlist", "[origin]") {
+    ip::util::OriginAllowlist a{{"https://example.vercel.app", "http://localhost:3000"}};
+    REQUIRE(a.allows("https://example.vercel.app"));
+    REQUIRE(a.allows("http://localhost:3000"));
+    REQUIRE_FALSE(a.allows("https://evil.com"));
+    REQUIRE_FALSE(a.allows(""));
 }

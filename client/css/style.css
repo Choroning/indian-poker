@@ -891,13 +891,13 @@ input:focus, select:focus {
 /* ── Toast Notifications ──────────────────────────────── */
 #toast-stack {
     position: fixed;
-    bottom: 24px;
+    top: 24px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    z-index: 100;
+    z-index: 1000;
     pointer-events: none;
     max-width: calc(100vw - 32px);
 }
@@ -943,13 +943,24 @@ input:focus, select:focus {
 }
 
 @keyframes toast-in {
-    from { opacity: 0; transform: translateY(16px) scale(0.95); }
+    from { opacity: 0; transform: translateY(-16px) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes toast-out {
     from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to   { opacity: 0; transform: translateY(-8px) scale(0.96); }
+}
+
+/* ── Form shake on error ──────────────────────────────── */
+.shake {
+    animation: shake-x 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes shake-x {
+    10%, 90%   { transform: translateX(-2px); }
+    20%, 80%   { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-8px); }
+    40%, 60%   { transform: translateX(8px); }
 }
 
 

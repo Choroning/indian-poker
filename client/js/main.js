@@ -300,7 +300,7 @@ ws.on("error", (msg) => {
     const codes = {
         ROOM_NOT_FOUND:       "방을 찾을 수 없습니다",
         NICKNAME_TAKEN:       "이미 사용 중인 닉네임입니다",
-        NICKNAME_INVALID:     "올바르지 않은 닉네임입니다",
+        NICKNAME_INVALID:     "닉네임이 올바르지 않습니다 (1~16자, 공백·제어문자 불가)",
         ROOM_FULL:            "방이 가득 찼습니다",
         ROOM_IN_PROGRESS:     "이미 게임이 진행 중입니다",
         NOT_HOST:             "호스트만 시작할 수 있습니다",
@@ -312,5 +312,23 @@ ws.on("error", (msg) => {
         INVALID_RAISE_AMOUNT: "레이즈 금액이 올바르지 않습니다",
         INTERNAL_ERROR:       "서버 오류가 발생했습니다",
     };
-    toast(codes[msg.code] || msg.message || "오류가 발생했습니다", "error", 4000);
+    toast(codes[msg.code] || msg.message || "오류가 발생했습니다", "error", 4200);
+
+    // For join-time errors, re-focus the relevant input and shake the form.
+    const joinErrors = new Set(["NICKNAME_TAKEN", "NICKNAME_INVALID", "ROOM_FULL", "ROOM_IN_PROGRESS", "ROOM_NOT_FOUND"]);
+    if (joinErrors.has(msg.code)) {
+        const expandedSlot = document.querySelector(".choice-slot.is-expanded");
+        if (expandedSlot) {
+            const form = expandedSlot.querySelector(".card-form");
+            if (form) {
+                form.classList.remove("shake");
+                void form.offsetWidth; // restart animation
+                form.classList.add("shake");
+            }
+            // Focus the field most likely to need editing
+            const targetName = (msg.code === "ROOM_NOT_FOUND") ? "room_code" : "nickname";
+            const input = expandedSlot.querySelector(`input[name="${targetName}"]`);
+            if (input) { input.focus(); input.select(); }
+        }
+    }
 });

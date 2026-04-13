@@ -108,10 +108,13 @@ export function renderGame(state, me) {
     });
 
     const actions = document.getElementById("game-actions");
-    if (state.current_turn === me && state.phase === "BETTING") {
+    const isMyTurn = state.current_turn === me && state.phase === "BETTING";
+    const wasMyTurn = actions.dataset.myTurn === "1";
+    if (isMyTurn) {
         actions.classList.remove("hidden");
         const input = document.getElementById("raise-amount");
-        if (!input.value) {
+        // Reset the raise input only on turn transition (so user typing isn't clobbered mid-turn)
+        if (!wasMyTurn) {
             input.value = state.current_bet + state.min_raise;
         }
         // Context-sensitive check/call buttons
@@ -132,6 +135,7 @@ export function renderGame(state, me) {
     } else {
         actions.classList.add("hidden");
     }
+    actions.dataset.myTurn = isMyTurn ? "1" : "0";
 }
 
 function escapeHtml(s) {

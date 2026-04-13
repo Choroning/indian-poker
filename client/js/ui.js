@@ -3,20 +3,33 @@ export function showScreen(id) {
     document.getElementById(id).classList.remove("hidden");
 }
 
-export function renderLobby(state) {
+export function renderLobby(state, me) {
     document.getElementById("lobby-badge").textContent = state.room_code;
+    const countEl = document.getElementById("lobby-count");
+    if (countEl) countEl.textContent = state.players.length;
+
     const ul = document.getElementById("lobby-players");
     ul.innerHTML = "";
     state.players.forEach((nick, i) => {
         const li = document.createElement("li");
         li.style.animationDelay = `${i * 60}ms`;
+        if (nick === me) li.classList.add("is-me");
 
         const dot = document.createElement("span");
         dot.className = "seat-dot";
         li.appendChild(dot);
 
-        const name = document.createTextNode(nick);
-        li.appendChild(name);
+        const nameWrap = document.createElement("span");
+        nameWrap.className = "player-name";
+        nameWrap.textContent = nick;
+        li.appendChild(nameWrap);
+
+        if (nick === me) {
+            const meTag = document.createElement("span");
+            meTag.className = "me-tag-list";
+            meTag.textContent = "나";
+            li.appendChild(meTag);
+        }
 
         if (nick === state.host) {
             const tag = document.createElement("span");

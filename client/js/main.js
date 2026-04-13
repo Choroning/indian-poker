@@ -116,7 +116,7 @@ document.getElementById("game-actions").addEventListener("click", (e) => {
 ws.on("room_created", (msg) => {
     roomCode = msg.room_code;
     showScreen("lobby");
-    renderLobby({ room_code: roomCode, players: [myNick], host: myNick });
+    renderLobby({ room_code: roomCode, players: [myNick], host: myNick }, myNick);
     document.getElementById("btn-start").hidden = false;
 });
 
@@ -126,7 +126,7 @@ ws.on("joined_room", (msg) => {
 
 ws.on("lobby_update", (msg) => {
     showScreen("lobby");
-    renderLobby(msg);
+    renderLobby(msg, myNick);
     document.getElementById("btn-start").hidden = (msg.host !== myNick);
 });
 

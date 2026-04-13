@@ -110,10 +110,24 @@ export function renderGame(state, me) {
     const actions = document.getElementById("game-actions");
     if (state.current_turn === me && state.phase === "BETTING") {
         actions.classList.remove("hidden");
-        // Pre-fill raise amount with min-raise target
         const input = document.getElementById("raise-amount");
         if (!input.value) {
             input.value = state.current_bet + state.min_raise;
+        }
+        // Context-sensitive check/call buttons
+        const meState = state.players.find(p => p.nickname === me);
+        const canCheck = meState.bet_this_round === state.current_bet;
+        const btnCheck = document.getElementById("btn-check");
+        const btnCall = document.getElementById("btn-call");
+        if (canCheck) {
+            btnCheck.disabled = false;
+            btnCall.disabled = true;
+            btnCall.textContent = "콜";
+        } else {
+            btnCheck.disabled = true;
+            const toCall = state.current_bet - meState.bet_this_round;
+            btnCall.disabled = false;
+            btnCall.textContent = `콜 +${toCall}`;
         }
     } else {
         actions.classList.add("hidden");

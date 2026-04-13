@@ -180,9 +180,20 @@ OutgoingList IndianPoker::handle_action(const std::string& nickname,
 
     if (kind == "check") {
         if (turn_player.bet_this_round != state_.current_bet) {
-            out.push_back(make_error(nickname, "INVALID_ACTION", "must raise or fold; cannot check"));
+            out.push_back(make_error(nickname, "INVALID_ACTION", "must call, raise, or fold; cannot check"));
             return out;
         }
+    } else if (kind == "call") {
+        if (turn_player.bet_this_round >= state_.current_bet) {
+            out.push_back(make_error(nickname, "INVALID_ACTION", "nothing to call; use check"));
+            return out;
+        }
+        int diff = state_.current_bet - turn_player.bet_this_round;
+        // Allow all-in call when chips < diff
+        int pay = diff > turn_player.chips ? turn_player.chips : diff;
+        turn_player.chips -= pay;
+        turn_player.bet_this_round += pay;
+        state_.pot += pay;
     } else if (kind == "raise") {
         if (!action.contains("amount") || !action["amount"].is_number_integer()) {
             out.push_back(make_error(nickname, "MALFORMED_MESSAGE", "missing raise amount"));

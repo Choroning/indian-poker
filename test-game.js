@@ -134,6 +134,69 @@ async function testGame(numPlayers) {
     console.log(`  ✅ ${numPlayers}인 게임 정상 작동`);
 }
 
+async function testCall() {
+    console.log('\n═══ 콜 액션 테스트 ═══');
+    const a = await createPlayer('alice'), b = await createPlayer('bob');
+    a.send({ type: 'create_room', nickname: 'alice', max_players: 2 });
+    const code = (await a.waitFor('room_created')).room_code;
+    b.send({ type: 'join_room', room_code: code, nickname: 'bob' });
+    await b.waitFor('joined_room');
+    await new Promise(r => setTimeout(r, 80));
+    a.send({ type: 'start_game' });
+    for (const p of [a, b]) await p.waitFor('game_state');
+
+    let s = a.msgs.filter(m => m.type === 'game_state').pop();
+    const starter = s.current_turn;
+    const starterP = [a, b].find(p => p.nick === starter);
+    const otherP = [a, b].find(p => p.nick !== starter);
+
+    // starter raises to 15
+    starterP.send({ type: 'action', action: 'raise', amount: 15 });
+    await new Promise(r => setTimeout(r, 80));
+    s = a.msgs.filter(m => m.type === 'game_state').pop();
+    if (s.current_bet !== 15) throw new Error(`Expected current_bet 15, got ${s.current_bet}`);
+    console.log(`  ${starter} 레이즈 15 → pot=${s.pot}, current_bet=15`);
+
+    // Error: call when nothing to call (starter who raised has matched bet)
+    starterP.msgs.length = 0;
+    starterP.send({ type: 'action', action: 'call' });
+    await new Promise(r => setTimeout(r, 80));
+    // starter might not be the turn player now, so NOT_YOUR_TURN could be the error
+    // Since turn moved to otherP, starter is now off-turn
+    const starterErr = starterP.msgs.find(m => m.type === 'error');
+    if (!starterErr) throw new Error('Expected error for starter');
+    console.log(`  ✓ 턴 아닌 상태 콜 거절 (${starterErr.code})`);
+
+    // other calls to match
+    otherP.send({ type: 'action', action: 'call' });
+    await new Promise(r => setTimeout(r, 150));
+    const handOver = a.msgs.find(m => m.type === 'hand_over');
+    if (!handOver) throw new Error('Expected hand_over after call matches');
+    console.log(`  ✓ 콜로 매치 → 쇼다운: ${handOver.winner} 승리 +${handOver.pot_won}`);
+
+    const finalState = a.msgs.filter(m => m.type === 'game_state').pop();
+    const caller = finalState.players.find(p => p.nickname === otherP.nick);
+    if (caller.bet_this_round !== 15) throw new Error(`Caller should have bet 15, got ${caller.bet_this_round}`);
+    console.log(`  ✓ 콜러 bet_this_round=15, chips=${caller.chips}`);
+
+    // Error: call when nothing to call (start of new hand, all matched via ante)
+    a.send({ type: 'ready_next_hand' });
+    b.send({ type: 'ready_next_hand' });
+    await new Promise(r => setTimeout(r, 150));
+    s = a.msgs.filter(m => m.type === 'game_state').pop();
+    const newStarter = s.current_turn;
+    const newStarterP = [a, b].find(p => p.nick === newStarter);
+    newStarterP.msgs.length = 0;
+    newStarterP.send({ type: 'action', action: 'call' });
+    await new Promise(r => setTimeout(r, 80));
+    const callErr = newStarterP.msgs.find(m => m.type === 'error');
+    if (!callErr || callErr.code !== 'INVALID_ACTION') throw new Error(`Expected INVALID_ACTION (nothing to call), got ${callErr?.code}`);
+    console.log(`  ✓ 콜할 게 없을 때 거절 (${callErr.code})`);
+
+    a.close(); b.close();
+    console.log('  ✅ 콜 액션 정상 작동');
+}
+
 async function testErrors() {
     console.log('\n═══ 오류 처리 테스트 ═══');
     const [a, b, c] = [await createPlayer('alice'), await createPlayer('bob'), await createPlayer('carol')];
@@ -310,9 +373,10 @@ async function testRaise() {
         await testGame(3);
         await testGame(4);
         await testRaise();
+        await testCall();
         await testErrors();
         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('✅ 2/3/4인 게임 + 레이즈 + 오류 처리 전부 통과');
+        console.log('✅ 2/3/4인 게임 + 레이즈 + 콜 + 오류 처리 전부 통과');
         process.exit(0);
     } catch (e) {
         console.error('\n❌ 실패:', e.message);

@@ -30,7 +30,29 @@ export function renderLobby(state) {
 
 export function renderGame(state, me) {
     document.getElementById("game-hand").textContent = state.hand_number;
-    document.getElementById("game-pot").textContent = state.pot;
+
+    const potEl = document.getElementById("game-pot");
+    if (potEl.textContent !== String(state.pot)) {
+        potEl.textContent = state.pot;
+        potEl.style.transform = "scale(1.12)";
+        setTimeout(() => { potEl.style.transform = ""; }, 240);
+    }
+
+    // Pot sub-text: current turn / phase hint
+    const potTurn = document.getElementById("pot-turn");
+    if (state.phase === "BETTING") {
+        if (state.current_turn === me) {
+            potTurn.innerHTML = `<strong>내 턴</strong> · 베팅 ${state.current_bet}`;
+        } else {
+            potTurn.innerHTML = `${state.current_turn} 차례 · 베팅 ${state.current_bet}`;
+        }
+    } else if (state.phase === "HAND_OVER") {
+        potTurn.innerHTML = "핸드 종료";
+    } else if (state.phase === "GAME_OVER") {
+        potTurn.innerHTML = "게임 종료";
+    } else {
+        potTurn.innerHTML = "";
+    }
 
     const container = document.getElementById("game-players");
     container.innerHTML = "";
@@ -42,6 +64,7 @@ export function renderGame(state, me) {
         if (p.nickname === state.current_turn && state.phase === "BETTING") {
             div.classList.add("is-turn");
         }
+        if (p.status === "folded") div.classList.add("is-folded");
 
         const cardDisplay = p.card === null ? "?" : p.card;
         const hiddenClass = p.card === null ? "is-hidden" : "";
@@ -58,14 +81,15 @@ export function renderGame(state, me) {
             turnBadge = `<span class="turn-badge">TURN</span>`;
         }
 
-        const label = p.nickname === me ? `${p.nickname} (나)` : p.nickname;
+        const meTag = p.nickname === me ? `<span class="me-tag">나</span>` : "";
 
         div.innerHTML = `
             ${turnBadge}
-            <div class="name">${label}</div>
-            <div class="card-value ${hiddenClass}">${cardDisplay}</div>
-            <div class="info"><strong>${p.chips}</strong> 칩 · 베팅 <strong>${p.bet_this_round}</strong></div>
             ${statusHtml}
+            <div class="name">${escapeHtml(p.nickname)}${meTag}</div>
+            <div class="card-value ${hiddenClass}">${cardDisplay}</div>
+            <div class="chips-row"><span class="chips-icon"></span>${p.chips}</div>
+            <div class="bet-line">베팅 <b>${p.bet_this_round}</b></div>
         `;
         container.appendChild(div);
     });
@@ -73,11 +97,46 @@ export function renderGame(state, me) {
     const actions = document.getElementById("game-actions");
     if (state.current_turn === me && state.phase === "BETTING") {
         actions.classList.remove("hidden");
+        // Pre-fill raise amount with min-raise target
+        const input = document.getElementById("raise-amount");
+        if (!input.value) {
+            input.value = state.current_bet + state.min_raise;
+        }
     } else {
         actions.classList.add("hidden");
     }
 }
 
-export function setMessage(text) {
-    document.getElementById("game-message").textContent = text || "";
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+}
+
+/* ── Toast system ──────────────────────────────────────── */
+let toastStack = null;
+function ensureStack() {
+    if (!toastStack) toastStack = document.getElementById("toast-stack");
+    return toastStack;
+}
+
+export function toast(text, variant = "info", duration = 3500) {
+    const stack = ensureStack();
+    if (!stack) return;
+    const el = document.createElement("div");
+    el.className = `toast ${variant}`;
+    el.textContent = text;
+    stack.appendChild(el);
+
+    // Auto-dismiss
+    setTimeout(() => {
+        el.classList.add("leaving");
+        setTimeout(() => el.remove(), 320);
+    }, duration);
+}
+
+// Backwards-compat: setMessage now routes to toast
+export function setMessage(text, variant = "info") {
+    if (!text) return;
+    toast(text, variant);
 }

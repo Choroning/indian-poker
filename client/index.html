@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Indian Poker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="css/style.css?v=23">
+    <link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
     <div id="app">
@@ -89,24 +89,33 @@
                 </div>
                 <div class="topbar-meta">
                     <span class="chip-badge">핸드 <b id="game-hand">1</b></span>
-                    <span class="chip-badge chip-pot">팟 <b id="game-pot">0</b></span>
                 </div>
             </header>
 
             <div class="table-body">
+                <!-- Center pot display -->
+                <div class="pot-display">
+                    <div class="pot-label">POT</div>
+                    <div class="pot-value" id="game-pot">0</div>
+                    <div class="pot-sub">
+                        <span id="pot-turn"></span>
+                    </div>
+                </div>
+
                 <div id="game-players"></div>
 
                 <div id="game-actions" class="hidden">
                     <button data-action="check" class="btn-action">체크</button>
                     <button data-action="fold" class="btn-action btn-danger">폴드</button>
                     <div class="raise-row">
-                        <input id="raise-amount" type="number" min="0" step="5" placeholder="금액">
+                        <input id="raise-amount" type="number" min="0" step="5" placeholder="레이즈 금액">
                         <button data-action="raise" class="btn-gold">레이즈</button>
                     </div>
                 </div>
-
-                <div id="game-message"></div>
             </div>
+
+            <!-- Toast messages -->
+            <div id="toast-stack"></div>
         </section>
 
     </div>

@@ -1,5 +1,5 @@
 import { WSClient } from "./ws_client.js";
-import { showScreen, renderLobby, renderGame, setMessage } from "./ui.js";
+import { showScreen, renderLobby, renderGame, toast } from "./ui.js";
 
 const ws = new WSClient();
 let myNick = null;
@@ -136,28 +136,33 @@ ws.on("game_state", (msg) => {
 });
 
 ws.on("hand_over", (msg) => {
-    setMessage(`핸드 ${msg.hand_number}: ${msg.winner} 승리 (+${msg.pot_won} 칩)`);
+    toast(`${msg.winner} 승리 · +${msg.pot_won} 칩`, "success", 2500);
     setTimeout(() => ws.send({ type: "ready_next_hand" }), 2000);
 });
 
 ws.on("game_over", (msg) => {
-    setMessage(`게임 종료 — ${msg.winner} 최종 승리!`);
+    toast(`게임 종료 — ${msg.winner} 최종 승리 🏆`, "success", 6000);
 });
 
-ws.on("player_disconnected", (msg) => setMessage(`${msg.nickname} 연결 끊김...`));
-ws.on("player_reconnected", (msg) => setMessage(`${msg.nickname} 재접속`));
-ws.on("player_left",         (msg) => setMessage(`${msg.nickname} 퇴장 (${msg.reason === "timeout" ? "시간 초과" : msg.reason})`));
+ws.on("player_disconnected", (msg) => toast(`${msg.nickname} 연결 끊김`, "warn"));
+ws.on("player_reconnected",  (msg) => toast(`${msg.nickname} 재접속`, "success", 2000));
+ws.on("player_left", (msg) => toast(`${msg.nickname} 퇴장 (${msg.reason === "timeout" ? "시간 초과" : msg.reason})`, "warn"));
+
 ws.on("error", (msg) => {
     const codes = {
-        ROOM_NOT_FOUND: "방을 찾을 수 없습니다",
-        NICKNAME_TAKEN: "이미 사용 중인 닉네임입니다",
-        NICKNAME_INVALID: "올바르지 않은 닉네임입니다",
-        ROOM_FULL: "방이 가득 찼습니다",
-        ROOM_IN_PROGRESS: "이미 게임이 진행 중입니다",
-        NOT_HOST: "호스트만 시작할 수 있습니다",
-        NOT_ENOUGH_PLAYERS: "2명 이상 필요합니다",
-        RATE_LIMITED: "요청이 너무 많습니다",
-        MALFORMED_MESSAGE: "잘못된 요청입니다",
+        ROOM_NOT_FOUND:       "방을 찾을 수 없습니다",
+        NICKNAME_TAKEN:       "이미 사용 중인 닉네임입니다",
+        NICKNAME_INVALID:     "올바르지 않은 닉네임입니다",
+        ROOM_FULL:            "방이 가득 찼습니다",
+        ROOM_IN_PROGRESS:     "이미 게임이 진행 중입니다",
+        NOT_HOST:             "호스트만 시작할 수 있습니다",
+        NOT_ENOUGH_PLAYERS:   "2명 이상 필요합니다",
+        RATE_LIMITED:         "요청이 너무 많습니다",
+        MALFORMED_MESSAGE:    "잘못된 요청입니다",
+        NOT_YOUR_TURN:        "아직 내 턴이 아닙니다",
+        INVALID_ACTION:       "지금은 할 수 없는 액션입니다",
+        INVALID_RAISE_AMOUNT: "레이즈 금액이 올바르지 않습니다",
+        INTERNAL_ERROR:       "서버 오류가 발생했습니다",
     };
-    setMessage(codes[msg.code] || `오류: ${msg.message}`);
+    toast(codes[msg.code] || msg.message || "오류가 발생했습니다", "error", 4000);
 });

@@ -134,6 +134,108 @@ async function testGame(numPlayers) {
     console.log(`  ✅ ${numPlayers}인 게임 정상 작동`);
 }
 
+async function testErrors() {
+    console.log('\n═══ 오류 처리 테스트 ═══');
+    const [a, b, c] = [await createPlayer('alice'), await createPlayer('bob'), await createPlayer('carol')];
+
+    a.send({ type: 'create_room', nickname: 'alice', max_players: 3 });
+    const code = (await a.waitFor('room_created')).room_code;
+    b.send({ type: 'join_room', room_code: code, nickname: 'bob' });
+    c.send({ type: 'join_room', room_code: code, nickname: 'carol' });
+    await b.waitFor('joined_room');
+    await c.waitFor('joined_room');
+    await new Promise(r => setTimeout(r, 100));
+
+    // Error: non-host starts game
+    b.msgs.length = 0;
+    b.send({ type: 'start_game' });
+    await new Promise(r => setTimeout(r, 100));
+    let err = b.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'NOT_HOST') throw new Error(`Expected NOT_HOST, got ${err?.code}`);
+    console.log(`  ✓ 비호스트 시작 거절 (${err.code})`);
+
+    a.send({ type: 'start_game' });
+    for (const p of [a, b, c]) await p.waitFor('game_state');
+
+    let s = a.msgs.filter(m => m.type === 'game_state').pop();
+    const turn = s.current_turn;
+    const turnP = [a, b, c].find(p => p.nick === turn);
+    const offTurn = [a, b, c].find(p => p.nick !== turn);
+
+    // Error: action out of turn
+    offTurn.msgs.length = 0;
+    offTurn.send({ type: 'action', action: 'check' });
+    await new Promise(r => setTimeout(r, 100));
+    err = offTurn.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'NOT_YOUR_TURN') throw new Error(`Expected NOT_YOUR_TURN, got ${err?.code}`);
+    console.log(`  ✓ 턴 아닐 때 액션 거절 (${err.code})`);
+
+    // Error: unknown action
+    turnP.msgs.length = 0;
+    turnP.send({ type: 'action', action: 'steal' });
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'MALFORMED_MESSAGE') throw new Error(`Expected MALFORMED_MESSAGE, got ${err?.code}`);
+    console.log(`  ✓ 알 수 없는 액션 거절 (${err.code})`);
+
+    // Error: raise without amount
+    turnP.msgs.length = 0;
+    turnP.send({ type: 'action', action: 'raise' });
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'MALFORMED_MESSAGE') throw new Error(`Expected MALFORMED_MESSAGE (no amount), got ${err?.code}`);
+    console.log(`  ✓ amount 없는 레이즈 거절 (${err.code})`);
+
+    // Error: raise exceeding chips
+    turnP.msgs.length = 0;
+    turnP.send({ type: 'action', action: 'raise', amount: 999 });
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'INVALID_RAISE_AMOUNT') throw new Error(`Expected INVALID_RAISE_AMOUNT (too big), got ${err?.code}`);
+    console.log(`  ✓ 칩 초과 레이즈 거절 (${err.code})`);
+
+    // Error: malformed JSON type
+    turnP.msgs.length = 0;
+    turnP.ws.send('{"not":"json typed"}');
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'MALFORMED_MESSAGE') throw new Error(`Expected MALFORMED_MESSAGE (no type), got ${err?.code}`);
+    console.log(`  ✓ type 없는 메시지 거절 (${err.code})`);
+
+    // Error: invalid JSON
+    turnP.msgs.length = 0;
+    turnP.ws.send('not valid json');
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'MALFORMED_MESSAGE') throw new Error(`Expected MALFORMED_MESSAGE (bad JSON), got ${err?.code}`);
+    console.log(`  ✓ 잘못된 JSON 거절 (${err.code})`);
+
+    // Error: ready_next_hand during BETTING (still in BETTING, before any fold)
+    turnP.msgs.length = 0;
+    turnP.send({ type: 'ready_next_hand' });
+    await new Promise(r => setTimeout(r, 150));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err || err.code !== 'INVALID_ACTION') {
+        throw new Error(`Expected INVALID_ACTION (ready during BETTING), got ${err?.code}`);
+    }
+    console.log(`  ✓ 베팅 중 ready_next_hand 거절 (${err.code})`);
+
+    // Fold turn player, then try to act again with same fd
+    turnP.send({ type: 'action', action: 'fold' });
+    await new Promise(r => setTimeout(r, 100));
+    // After fold in 3-player, remaining 2 have all matched via ante → may go HAND_OVER
+    // But alice (turnP) can't act regardless
+    turnP.msgs.length = 0;
+    turnP.send({ type: 'action', action: 'check' });
+    await new Promise(r => setTimeout(r, 100));
+    err = turnP.msgs.find(m => m.type === 'error');
+    if (!err) throw new Error('Folded/eliminated player should not be able to act');
+    console.log(`  ✓ 폴드/핸드종료 후 액션 거절 (${err.code})`);
+
+    for (const p of [a, b, c]) p.close();
+    console.log('  ✅ 오류 처리 전부 정상');
+}
+
 async function testRaise() {
     console.log('\n═══ 레이즈 액션 테스트 ═══');
     const players = [await createPlayer('alice'), await createPlayer('bob')];
@@ -208,8 +310,9 @@ async function testRaise() {
         await testGame(3);
         await testGame(4);
         await testRaise();
+        await testErrors();
         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('✅ 2/3/4인 게임 + 레이즈 전부 통과');
+        console.log('✅ 2/3/4인 게임 + 레이즈 + 오류 처리 전부 통과');
         process.exit(0);
     } catch (e) {
         console.error('\n❌ 실패:', e.message);

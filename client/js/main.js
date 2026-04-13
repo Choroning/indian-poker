@@ -73,6 +73,21 @@ for (const label of document.querySelectorAll(".choice-label")) {
     });
 }
 
+/* ── Rules modal ──────────────────────────────────────── */
+const rulesModal = document.getElementById("rules-modal");
+function openRules() { rulesModal.classList.remove("hidden"); rulesModal.setAttribute("aria-hidden", "false"); }
+function closeRules() { rulesModal.classList.add("hidden"); rulesModal.setAttribute("aria-hidden", "true"); }
+for (const btn of document.querySelectorAll("[data-rules-open]")) {
+    btn.addEventListener("click", openRules);
+}
+for (const btn of document.querySelectorAll("[data-rules-close]")) {
+    btn.addEventListener("click", closeRules);
+}
+rulesModal.addEventListener("click", (e) => { if (e.target === rulesModal) closeRules(); });
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !rulesModal.classList.contains("hidden")) closeRules();
+});
+
 /* ── Form submissions ─────────────────────────────────── */
 document.getElementById("form-create").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -268,7 +283,11 @@ ws.on("hand_over", (msg) => {
 });
 
 ws.on("game_over", (msg) => {
-    toast(`게임 종료 — ${msg.winner} 최종 승리 🏆`, "success", 5000);
+    let text = `게임 종료 — ${msg.winner} 최종 승리 🏆`;
+    if (msg.reason === "hand_limit") {
+        text = `${msg.hand_limit}핸드 종료 — ${msg.winner} 칩 리더 승리 🏆`;
+    }
+    toast(text, "success", 5000);
     _seenGameInThisMatch = false;
     // Server will send a lobby_update after this, which will switch to lobby view
 });

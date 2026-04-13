@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Indian Poker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="css/style.css?v=30">
+    <link rel="stylesheet" href="css/style.css?v=31">
 </head>
 <body>
     <div id="app">
@@ -55,6 +55,12 @@
                         <p class="footer-copy">&copy; 2026 Cheolwon Park. All rights reserved.</p>
                     </div>
                 </footer>
+
+                <!-- Rules trigger (floating corner) -->
+                <button class="rules-trigger" data-rules-open>
+                    <span class="rules-trigger-icon">?</span>
+                    <span class="rules-trigger-text">게임 방법</span>
+                </button>
             </div>
         </section>
 
@@ -81,6 +87,7 @@
                     <button id="btn-start" class="btn-gold btn-wide" hidden>게임 시작</button>
                     <button id="btn-leave" class="btn-ghost btn-wide">나가기</button>
                     <button id="btn-close" class="btn-ghost btn-ghost-danger btn-wide" hidden>방 닫기</button>
+                    <button class="btn-ghost btn-wide" data-rules-open>게임 방법 보기</button>
                 </div>
             </div>
         </section>
@@ -101,7 +108,8 @@
                     <span class="topbar-title-2">Poker</span>
                 </div>
                 <div class="topbar-meta">
-                    <span class="chip-badge">핸드 <b id="game-hand">1</b></span>
+                    <span class="chip-badge">핸드 <b id="game-hand">1</b>/<span id="game-hand-limit">20</span></span>
+                    <span class="chip-badge">앤티 <b id="game-ante">5</b></span>
                     <button id="btn-game-leave" class="topbar-btn danger" title="나가기">나가기</button>
                     <button id="btn-game-close" class="topbar-btn danger" title="게임 종료" hidden>게임 종료</button>
                 </div>
@@ -139,6 +147,63 @@
 
     <!-- Global toast stack (outside all screens so errors show on any page) -->
     <div id="toast-stack"></div>
+
+    <!-- Rules modal -->
+    <div id="rules-modal" class="modal-backdrop hidden" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rules-title">
+            <header class="modal-header">
+                <h2 id="rules-title" class="modal-title">게임 방법</h2>
+                <button class="modal-close" data-rules-close aria-label="닫기">&times;</button>
+            </header>
+            <div class="modal-body">
+                <section class="rule-section">
+                    <h3>개요</h3>
+                    <p>자기 카드는 못 보고 <b>상대 카드만</b> 볼 수 있습니다. 상대의 반응과 카드를 읽어 베팅하는 심리전 포커입니다.</p>
+                </section>
+
+                <section class="rule-section">
+                    <h3>카드 &amp; 칩</h3>
+                    <ul>
+                        <li>카드는 <b>1~10</b>, 숫자가 높을수록 강함</li>
+                        <li>시작 칩: <b>100</b></li>
+                    </ul>
+                </section>
+
+                <section class="rule-section">
+                    <h3>앤티 (매 핸드 자동 차감)</h3>
+                    <table class="rule-table">
+                        <tr><td>1~3 핸드</td><td><b>5 칩</b></td></tr>
+                        <tr><td>4~6 핸드</td><td><b>10 칩</b></td></tr>
+                        <tr><td>7~9 핸드</td><td><b>20 칩</b></td></tr>
+                        <tr><td>10+ 핸드</td><td><b>40 칩</b></td></tr>
+                    </table>
+                </section>
+
+                <section class="rule-section">
+                    <h3>액션</h3>
+                    <ul>
+                        <li><b class="gold">체크</b> — 내 베팅 = 현재 베팅일 때 턴 넘기기</li>
+                        <li><b class="gold">콜</b> — 현재 베팅 금액 맞추기</li>
+                        <li><b class="gold">레이즈</b> — 최소 <code>현재 베팅 + 앤티</code> 이상으로 올리기</li>
+                        <li><b class="red">폴드</b> — 이 핸드 포기, 베팅한 칩은 잃음</li>
+                    </ul>
+                </section>
+
+                <section class="rule-section">
+                    <h3>턴 제한</h3>
+                    <p>매 턴 <b>15초</b>. 시간이 다 지나면 <b>자동 폴드</b>됩니다.</p>
+                </section>
+
+                <section class="rule-section">
+                    <h3>승리 조건</h3>
+                    <ul>
+                        <li>칩이 0 이하로 떨어지면 <b>탈락</b>, 마지막 1명이 승리</li>
+                        <li><b>최대 20핸드</b>에 도달하면 <b>칩 리더</b>가 승리</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
 
     <script src="js/config.js"></script>
     <script type="module" src="js/main.js"></script>

@@ -30,8 +30,18 @@ OutgoingList IndianPoker::start(const std::vector<std::string>& nicknames) {
     return out;
 }
 
+static int compute_ante_for_hand(int hand_number) {
+    // Escalating blinds — forces the match to conclude within ~10 hands.
+    if (hand_number <= 3) return 5;
+    if (hand_number <= 6) return 10;
+    if (hand_number <= 9) return 20;
+    return 40;
+}
+
 void IndianPoker::deal_new_hand() {
     state_.hand_number += 1;
+    state_.ante = compute_ante_for_hand(state_.hand_number);
+    state_.min_raise = state_.ante;
     state_.pot = 0;
     state_.current_bet = state_.ante;
 
@@ -137,6 +147,8 @@ json IndianPoker::make_state_json(const std::string& viewer) const {
         {"you", viewer},
         {"turn_deadline_ms", turn_deadline_ms},
         {"server_now_ms", now_ms_},
+        {"ante", state_.ante},
+        {"hand_limit", 20},
     };
 }
 
@@ -320,16 +332,40 @@ void IndianPoker::enter_hand_over(OutgoingList& out, const std::string& winner_n
 void IndianPoker::start_next_hand_or_finish(OutgoingList& out) {
     int alive = 0;
     int last_idx = -1;
+    int max_chips = -1;
+    int max_chips_idx = -1;
     for (std::size_t i = 0; i < state_.players.size(); ++i) {
-        if (state_.players[i].status != PlayerStatus::Eliminated) {
+        const auto& p = state_.players[i];
+        if (p.status != PlayerStatus::Eliminated) {
             ++alive;
             last_idx = static_cast<int>(i);
+            if (p.chips > max_chips) {
+                max_chips = p.chips;
+                max_chips_idx = static_cast<int>(i);
+            }
         }
     }
     if (alive <= 1) {
         state_.phase = Phase::GameOver;
         std::string winner = last_idx >= 0 ? state_.players[last_idx].nickname : std::string{};
-        out.push_back(Broadcast{{{"type", "game_over"}, {"winner", winner}}});
+        out.push_back(Broadcast{{
+            {"type", "game_over"},
+            {"winner", winner},
+            {"reason", "last_standing"},
+        }});
+        return;
+    }
+    // Hand cap: after 20 hands, crown the chip leader.
+    constexpr int kMaxHands = 20;
+    if (state_.hand_number >= kMaxHands) {
+        state_.phase = Phase::GameOver;
+        std::string winner = max_chips_idx >= 0 ? state_.players[max_chips_idx].nickname : std::string{};
+        out.push_back(Broadcast{{
+            {"type", "game_over"},
+            {"winner", winner},
+            {"reason", "hand_limit"},
+            {"hand_limit", kMaxHands},
+        }});
         return;
     }
     int n = static_cast<int>(state_.players.size());

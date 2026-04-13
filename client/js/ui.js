@@ -43,6 +43,8 @@ export function renderLobby(state, me) {
 
 export function renderGame(state, me) {
     document.getElementById("game-hand").textContent = state.hand_number;
+    if (state.hand_limit) document.getElementById("game-hand-limit").textContent = state.hand_limit;
+    if (state.ante != null) document.getElementById("game-ante").textContent = state.ante;
 
     const potEl = document.getElementById("game-pot");
     if (potEl.textContent !== String(state.pot)) {

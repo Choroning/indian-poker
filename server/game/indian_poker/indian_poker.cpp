@@ -51,6 +51,7 @@ void IndianPoker::deal_new_hand() {
         p.card = 0;
         p.bet_this_round = 0;
         p.ready_next_hand = false;
+        p.acted_this_round = false;
         if (p.status == PlayerStatus::Folded) p.status = PlayerStatus::Active;
         if (p.status == PlayerStatus::Active) ++active;
     }
@@ -203,6 +204,7 @@ OutgoingList IndianPoker::handle_action(const std::string& nickname,
             out.push_back(make_error(nickname, "INVALID_ACTION", "must call, raise, or fold; cannot check"));
             return out;
         }
+        turn_player.acted_this_round = true;
     } else if (kind == "call") {
         if (turn_player.bet_this_round >= state_.current_bet) {
             out.push_back(make_error(nickname, "INVALID_ACTION", "nothing to call; use check"));
@@ -214,6 +216,7 @@ OutgoingList IndianPoker::handle_action(const std::string& nickname,
         turn_player.chips -= pay;
         turn_player.bet_this_round += pay;
         state_.pot += pay;
+        turn_player.acted_this_round = true;
     } else if (kind == "raise") {
         if (!action.contains("amount") || !action["amount"].is_number_integer()) {
             out.push_back(make_error(nickname, "MALFORMED_MESSAGE", "missing raise amount"));
@@ -234,8 +237,16 @@ OutgoingList IndianPoker::handle_action(const std::string& nickname,
         turn_player.bet_this_round = amount;
         state_.pot += diff;
         state_.current_bet = amount;
+        // A raise reopens the betting: everyone else active must act again.
+        for (auto& p : state_.players) {
+            if (p.status == PlayerStatus::Active && p.nickname != nickname) {
+                p.acted_this_round = false;
+            }
+        }
+        turn_player.acted_this_round = true;
     } else if (kind == "fold") {
         turn_player.status = PlayerStatus::Folded;
+        turn_player.acted_this_round = true;
     } else {
         out.push_back(make_error(nickname, "MALFORMED_MESSAGE", "unknown action"));
         return out;
@@ -250,6 +261,7 @@ OutgoingList IndianPoker::handle_action(const std::string& nickname,
 void IndianPoker::maybe_end_betting(OutgoingList& out) {
     int active = 0;
     int all_matched = 0;
+    int all_acted = 0;
     int last_active_idx = -1;
     for (std::size_t i = 0; i < state_.players.size(); ++i) {
         const auto& p = state_.players[i];
@@ -257,6 +269,7 @@ void IndianPoker::maybe_end_betting(OutgoingList& out) {
             ++active;
             last_active_idx = static_cast<int>(i);
             if (p.bet_this_round == state_.current_bet) ++all_matched;
+            if (p.acted_this_round) ++all_acted;
         }
     }
     if (active == 1) {
@@ -267,7 +280,9 @@ void IndianPoker::maybe_end_betting(OutgoingList& out) {
         enter_hand_over(out, winner.nickname, pot_won);
         return;
     }
-    if (all_matched == active) {
+    // Betting round ends only when every active player has acted at least once
+    // in this round AND all have matched the current bet.
+    if (all_matched == active && all_acted == active) {
         do_showdown(out);
     }
 }

@@ -15,6 +15,7 @@ struct PlayerState {
     PlayerStatus status = PlayerStatus::Active;
     bool connected = true;
     bool ready_next_hand = false;
+    bool acted_this_round = false;
 };
 
 enum class Phase { Lobby, Dealing, Betting, Showdown, HandOver, GameOver };

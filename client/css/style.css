@@ -297,6 +297,41 @@ input:focus, select:focus {
 
 .btn-wide { width: 100%; padding: 14px; font-size: 15px; margin-top: 12px; }
 
+/* Ghost button — secondary action */
+.btn-ghost {
+    font-family: var(--font);
+    font-size: 14px; font-weight: 600;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 180ms;
+    margin-top: 8px;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border-hi); background: var(--surface); }
+.btn-ghost:active { transform: scale(0.98); }
+
+.btn-ghost-danger { color: var(--red); border-color: rgba(196,69,58,0.2); }
+.btn-ghost-danger:hover { color: #e55a4f; background: var(--red-bg); border-color: rgba(196,69,58,0.4); }
+
+/* Small topbar button */
+.topbar-btn {
+    font-family: var(--font);
+    font-size: 12px; font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-up);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 160ms;
+}
+.topbar-btn:hover { color: var(--text); border-color: var(--border-hi); }
+.topbar-btn.danger { color: var(--red); border-color: rgba(196,69,58,0.22); }
+.topbar-btn.danger:hover { background: var(--red-bg); color: #e55a4f; border-color: rgba(196,69,58,0.45); }
+
 /* ── Footer (quiz-app 동일 사이즈) ────────────────────── */
 .site-footer {
     width: 100%;

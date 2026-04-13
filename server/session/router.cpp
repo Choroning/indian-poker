@@ -53,6 +53,8 @@ void Router::on_text(int fd, const std::string& text) {
     else if (type == "join_room") handle_join_room(fd, msg);
     else if (type == "start_game") handle_start_game(fd, msg);
     else if (type == "action" || type == "ready_next_hand") handle_game_action(fd, msg);
+    else if (type == "leave_room") handle_leave_room(fd, msg);
+    else if (type == "close_room") handle_close_room(fd, msg);
     else send_error(fd, "MALFORMED_MESSAGE", "unknown type: " + type);
 }
 
@@ -246,6 +248,100 @@ void Router::handle_game_action(int fd, const nlohmann::json& msg) {
     if (room->game() && room->game()->finished()) {
         room->set_state(RoomState::Closed);
     }
+}
+
+void Router::handle_leave_room(int fd, const nlohmann::json& /*msg*/) {
+    auto it = fd_owner_.find(fd);
+    if (it == fd_owner_.end()) { send_error(fd, "ROOM_NOT_FOUND", "not in a room"); return; }
+    const std::string code = it->second.room_code;
+    const std::string nickname = it->second.nickname;
+    fd_owner_.erase(it);
+
+    Room* room = rooms_.find(code);
+    if (!room) return;
+
+    send_json(fd, {{"type", "you_left"}});
+
+    bool leaver_was_host = (nickname == room->host_nickname());
+    room->remove_player(nickname);
+    grace_.erase(code + ":" + nickname);
+
+    if (room->players().empty()) {
+        rooms_.erase(code);
+        return;
+    }
+
+    // If host left or game-in-progress becomes unviable, close the room.
+    bool game_over = room->game() && room->state() == RoomState::Locked &&
+                     static_cast<int>(room->players().size()) < 2;
+    if (leaver_was_host || game_over) {
+        for (const auto& p : room->players()) {
+            if (p->connected()) {
+                send_json(p->fd(), {
+                    {"type", "room_closed"},
+                    {"reason", leaver_was_host ? "host_left" : "not_enough_players"},
+                });
+            }
+        }
+        for (auto it2 = fd_owner_.begin(); it2 != fd_owner_.end();) {
+            if (it2->second.room_code == code) it2 = fd_owner_.erase(it2);
+            else ++it2;
+        }
+        rooms_.erase(code);
+        return;
+    }
+
+    // If game is running, notify it of the player departure.
+    if (room->game()) {
+        auto outs = room->game()->on_player_gone(nickname, "left");
+        fanout_game_state(*room, outs);
+        if (room->game()->finished()) room->set_state(RoomState::Closed);
+    }
+
+    for (const auto& p : room->players()) {
+        if (p->connected()) {
+            send_json(p->fd(), {
+                {"type", "player_left"},
+                {"nickname", nickname},
+                {"reason", "voluntary"},
+            });
+            if (!room->game()) {
+                send_json(p->fd(), lobby_update(*room));
+            }
+        }
+    }
+}
+
+void Router::handle_close_room(int fd, const nlohmann::json& /*msg*/) {
+    auto it = fd_owner_.find(fd);
+    if (it == fd_owner_.end()) { send_error(fd, "ROOM_NOT_FOUND", "not in a room"); return; }
+    const std::string code = it->second.room_code;
+    const std::string nickname = it->second.nickname;
+
+    Room* room = rooms_.find(code);
+    if (!room) { send_error(fd, "ROOM_NOT_FOUND", "room gone"); return; }
+    if (room->host_nickname() != nickname) {
+        send_error(fd, "NOT_HOST", "only host can close the room");
+        return;
+    }
+
+    for (const auto& p : room->players()) {
+        if (p->connected()) {
+            send_json(p->fd(), {
+                {"type", "room_closed"},
+                {"reason", "host_closed"},
+            });
+        }
+    }
+    for (auto it2 = fd_owner_.begin(); it2 != fd_owner_.end();) {
+        if (it2->second.room_code == code) it2 = fd_owner_.erase(it2);
+        else ++it2;
+    }
+    for (auto it2 = grace_.begin(); it2 != grace_.end();) {
+        if (it2->first.rfind(code + ":", 0) == 0) it2 = grace_.erase(it2);
+        else ++it2;
+    }
+    rooms_.erase(code);
 }
 
 void Router::fanout_game_state(Room& room, const ip::game::OutgoingList& outs) {

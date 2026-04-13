@@ -99,6 +99,24 @@ document.getElementById("btn-start").addEventListener("click", () => {
     ws.send({ type: "start_game" });
 });
 
+document.getElementById("btn-leave").addEventListener("click", () => {
+    if (confirm("방에서 나가시겠습니까?")) ws.send({ type: "leave_room" });
+});
+
+document.getElementById("btn-close").addEventListener("click", () => {
+    if (confirm("방을 닫으면 모든 참가자가 퇴장됩니다. 계속하시겠습니까?")) {
+        ws.send({ type: "close_room" });
+    }
+});
+
+document.getElementById("btn-game-leave").addEventListener("click", () => {
+    if (confirm("게임에서 나가시겠습니까?")) ws.send({ type: "leave_room" });
+});
+
+document.getElementById("btn-game-close").addEventListener("click", () => {
+    if (confirm("게임을 종료하고 방을 닫으시겠습니까?")) ws.send({ type: "close_room" });
+});
+
 document.getElementById("game-actions").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -127,13 +145,27 @@ ws.on("joined_room", (msg) => {
 ws.on("lobby_update", (msg) => {
     showScreen("lobby");
     renderLobby(msg, myNick);
-    document.getElementById("btn-start").hidden = (msg.host !== myNick);
+    const isHost = msg.host === myNick;
+    document.getElementById("btn-start").hidden = !isHost;
+    document.getElementById("btn-close").hidden = !isHost;
+    document.getElementById("btn-leave").hidden = isHost; // host uses 방 닫기, others use 나가기
 });
 
 ws.on("game_state", (msg) => {
     showScreen("game");
     renderGame(msg, myNick);
+    // Show close_room for host, leave for others
+    const hostNick = currentHostFromState(msg);
+    const isHost = hostNick === myNick;
+    document.getElementById("btn-game-close").hidden = !isHost;
+    document.getElementById("btn-game-leave").hidden = isHost;
 });
+
+// We don't get host info in game_state, so track host nickname from lobby_update
+let _lastHost = null;
+function currentHostFromState(_s) { return _lastHost; }
+ws.on("lobby_update", (msg) => { _lastHost = msg.host; });
+ws.on("room_created", (msg) => { _lastHost = myNick; });
 
 ws.on("hand_over", (msg) => {
     toast(`${msg.winner} 승리 · +${msg.pot_won} 칩`, "success", 2500);
@@ -142,6 +174,25 @@ ws.on("hand_over", (msg) => {
 
 ws.on("game_over", (msg) => {
     toast(`게임 종료 — ${msg.winner} 최종 승리 🏆`, "success", 6000);
+});
+
+ws.on("you_left", () => {
+    roomCode = null;
+    _lastHost = null;
+    showScreen("landing");
+    toast("방에서 나갔습니다", "info", 2500);
+});
+
+ws.on("room_closed", (msg) => {
+    roomCode = null;
+    _lastHost = null;
+    showScreen("landing");
+    const reasons = {
+        host_closed: "호스트가 방을 닫았습니다",
+        host_left: "호스트가 나가서 방이 종료되었습니다",
+        not_enough_players: "플레이어가 부족해 방이 종료되었습니다",
+    };
+    toast(reasons[msg.reason] || "방이 닫혔습니다", "warn", 3500);
 });
 
 ws.on("player_disconnected", (msg) => toast(`${msg.nickname} 연결 끊김`, "warn"));

@@ -325,9 +325,44 @@ void IndianPoker::start_next_hand_or_finish(OutgoingList& out) {
     broadcast_state(out);
 }
 
-OutgoingList IndianPoker::on_player_gone(const std::string& /*nickname*/,
+OutgoingList IndianPoker::on_player_gone(const std::string& nickname,
                                          const std::string& /*reason*/) {
-    return {};
+    OutgoingList out;
+    // Mark the player as eliminated in game state.
+    auto it = std::find_if(state_.players.begin(), state_.players.end(),
+        [&](const PlayerState& p) { return p.nickname == nickname; });
+    if (it == state_.players.end()) return out;
+    if (it->status == PlayerStatus::Eliminated) return out;
+
+    bool was_their_turn = (state_.current_turn_index >= 0 &&
+                           state_.current_turn_index < static_cast<int>(state_.players.size()) &&
+                           state_.players[state_.current_turn_index].nickname == nickname);
+    it->status = PlayerStatus::Eliminated;
+
+    // If in BETTING, advance turn if it was theirs, and check if hand should end.
+    if (state_.phase == Phase::Betting) {
+        if (was_their_turn) advance_turn();
+        maybe_end_betting(out);
+    }
+
+    // Check for overall game over.
+    int alive = 0;
+    int last_idx = -1;
+    for (std::size_t i = 0; i < state_.players.size(); ++i) {
+        if (state_.players[i].status != PlayerStatus::Eliminated) {
+            ++alive;
+            last_idx = static_cast<int>(i);
+        }
+    }
+    if (alive <= 1 && state_.phase != Phase::GameOver) {
+        state_.phase = Phase::GameOver;
+        std::string winner = last_idx >= 0 ? state_.players[last_idx].nickname : std::string{};
+        out.push_back(Broadcast{{{"type", "game_over"}, {"winner", winner}}});
+        return out;
+    }
+
+    broadcast_state(out);
+    return out;
 }
 
 } // namespace ip::game::indian_poker

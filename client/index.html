@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Indian Poker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="css/style.css?v=25">
+    <link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
     <div id="app">
@@ -79,6 +79,8 @@
                     <p class="lobby-waiting">플레이어 <span id="lobby-count">0</span>명 대기 중</p>
                     <ul id="lobby-players"></ul>
                     <button id="btn-start" class="btn-gold btn-wide" hidden>게임 시작</button>
+                    <button id="btn-leave" class="btn-ghost btn-wide">나가기</button>
+                    <button id="btn-close" class="btn-ghost btn-ghost-danger btn-wide" hidden>방 닫기</button>
                 </div>
             </div>
         </section>
@@ -94,6 +96,8 @@
                 </div>
                 <div class="topbar-meta">
                     <span class="chip-badge">핸드 <b id="game-hand">1</b></span>
+                    <button id="btn-game-leave" class="topbar-btn" title="나가기">나가기</button>
+                    <button id="btn-game-close" class="topbar-btn danger" title="게임 종료" hidden>게임 종료</button>
                 </div>
             </header>
 

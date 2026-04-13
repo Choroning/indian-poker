@@ -29,6 +29,8 @@ private:
     void handle_join_room(int fd, const nlohmann::json& msg);
     void handle_start_game(int fd, const nlohmann::json& msg);
     void handle_game_action(int fd, const nlohmann::json& msg);
+    void handle_leave_room(int fd, const nlohmann::json& msg);
+    void handle_close_room(int fd, const nlohmann::json& msg);
     void fanout_game_state(Room& room, const ip::game::OutgoingList& outs);
 
     void send_error(int fd, const std::string& code, const std::string& message);

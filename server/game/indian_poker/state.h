@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,8 @@ struct State {
     int ante = 5;
     int current_turn_index = -1;
     int starting_player_index = 0;
+    uint64_t turn_started_at_ms = 0;
+    uint64_t turn_duration_ms = 15000;
 };
 
 } // namespace ip::game::indian_poker

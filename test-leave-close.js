@@ -105,6 +105,33 @@ async function test4_hostLeaveClosesRoom() {
     a.close(); b.close();
 }
 
+async function test6_gameOverReturnsToLobby() {
+    console.log('\n═══ 게임 종료 후 로비 복귀 ═══');
+    const a = await createPlayer('alice'), b = await createPlayer('bob');
+    a.send({ type: 'create_room', nickname: 'alice', max_players: 2 });
+    const code = (await a.waitFor('room_created')).room_code;
+    b.send({ type: 'join_room', room_code: code, nickname: 'bob' });
+    await b.waitFor('joined_room');
+    await new Promise(r => setTimeout(r, 80));
+
+    a.send({ type: 'start_game' });
+    await Promise.all([a, b].map(p => p.waitFor('game_state')));
+
+    // Play until game over by having one player leave (triggers game_over since only 1 player left)
+    b.send({ type: 'leave_room' });
+    await b.waitFor('you_left');
+    await a.waitFor('game_over');
+    console.log('  ✓ game_over 수신');
+
+    // Alice should receive lobby_update and be back in lobby
+    await new Promise(r => setTimeout(r, 150));
+    const lobby = a.msgs.filter(m => m.type === 'lobby_update').pop();
+    if (!lobby) throw new Error('No lobby_update after game_over');
+    console.log(`  ✓ lobby_update 수신 (players=${lobby.players.join(',')}, host=${lobby.host})`);
+
+    a.close(); b.close();
+}
+
 async function test5_leaveDuringGame() {
     console.log('\n═══ 게임 중 나가기 ═══');
     const a = await createPlayer('alice'), b = await createPlayer('bob'), c = await createPlayer('carol');
@@ -143,8 +170,9 @@ async function test5_leaveDuringGame() {
         await test3_nonHostCantClose();
         await test4_hostLeaveClosesRoom();
         await test5_leaveDuringGame();
+        await test6_gameOverReturnsToLobby();
         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('✅ 나가기/방닫기 전부 통과');
+        console.log('✅ 나가기/방닫기/게임오버 전부 통과');
         process.exit(0);
     } catch (e) {
         console.error('\n❌ 실패:', e.message);

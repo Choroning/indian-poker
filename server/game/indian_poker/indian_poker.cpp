@@ -56,6 +56,7 @@ void IndianPoker::deal_new_hand() {
     }
 
     state_.current_turn_index = state_.starting_player_index;
+    state_.turn_started_at_ms = now_ms_;
     state_.phase = Phase::Betting;
 }
 
@@ -66,6 +67,7 @@ void IndianPoker::advance_turn() {
         const auto& p = state_.players[idx];
         if (p.status == PlayerStatus::Active && p.chips >= 0) {
             state_.current_turn_index = idx;
+            state_.turn_started_at_ms = now_ms_;
             return;
         }
     }
@@ -109,6 +111,10 @@ json IndianPoker::make_state_json(const std::string& viewer) const {
         state_.current_turn_index < static_cast<int>(state_.players.size())) {
         current_turn = state_.players[state_.current_turn_index].nickname;
     }
+    uint64_t turn_deadline_ms = 0;
+    if (state_.phase == Phase::Betting && state_.turn_started_at_ms > 0) {
+        turn_deadline_ms = state_.turn_started_at_ms + state_.turn_duration_ms;
+    }
     return {
         {"type", "game_state"},
         {"phase", [&]() -> std::string {
@@ -129,6 +135,8 @@ json IndianPoker::make_state_json(const std::string& viewer) const {
         {"current_bet", state_.current_bet},
         {"min_raise", state_.min_raise},
         {"you", viewer},
+        {"turn_deadline_ms", turn_deadline_ms},
+        {"server_now_ms", now_ms_},
     };
 }
 

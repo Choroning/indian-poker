@@ -2,6 +2,7 @@
 
 #include "game/indian_poker/indian_poker.h"
 
+#include <chrono>
 #include <memory>
 #include <random>
 
@@ -30,6 +31,10 @@ static json lobby_update(const Room& r) {
 }
 
 void Router::on_text(int fd, const std::string& text) {
+    // Timestamp this entire message-handling for turn-timer reasoning.
+    using namespace std::chrono;
+    now_ms_ = static_cast<uint64_t>(
+        duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
     // Clean up closed rooms from previous tick.
     std::vector<std::string> to_erase;
     for (const auto& [code, r] : rooms_.all()) {
@@ -229,13 +234,15 @@ void Router::handle_start_game(int fd, const nlohmann::json& /*msg*/) {
     std::vector<std::string> nicks;
     for (const auto& p : room->players()) nicks.push_back(p->nickname());
 
+    // The 3-second countdown is on the client, so offset the first turn's
+    // deadline by the countdown duration so the timer doesn't start early.
+    uint64_t now = now_ms_;
+    game->set_now_ms(now + 3000);
     auto outs = game->start(nicks);
     room->set_state(RoomState::Locked);
     room->set_game(std::move(game));
     fanout_game_state(*room, outs);
-    if (room->game() && room->game()->finished()) {
-        room->set_state(RoomState::Closed);
-    }
+    check_game_finished(*room);
 }
 
 void Router::handle_game_action(int fd, const nlohmann::json& msg) {
@@ -243,10 +250,21 @@ void Router::handle_game_action(int fd, const nlohmann::json& msg) {
     if (it == fd_owner_.end()) { send_error(fd, "ROOM_NOT_FOUND", "not in a room"); return; }
     Room* room = rooms_.find(it->second.room_code);
     if (!room || !room->game()) { send_error(fd, "INVALID_ACTION", "no game"); return; }
+    auto* ip_game = dynamic_cast<ip::game::indian_poker::IndianPoker*>(room->game());
+    if (ip_game) ip_game->set_now_ms(now_ms_);
     auto outs = room->game()->handle_action(it->second.nickname, msg);
     fanout_game_state(*room, outs);
-    if (room->game() && room->game()->finished()) {
-        room->set_state(RoomState::Closed);
+    check_game_finished(*room);
+}
+
+void Router::check_game_finished(Room& room) {
+    if (!room.game() || !room.game()->finished()) return;
+    // Game over: return to lobby, clear game state, preserve players
+    room.set_state(RoomState::Open);
+    room.set_game(nullptr);
+    // Re-broadcast lobby to all remaining connected players
+    for (const auto& p : room.players()) {
+        if (p->connected()) send_json(p->fd(), lobby_update(room));
     }
 }
 
@@ -271,15 +289,13 @@ void Router::handle_leave_room(int fd, const nlohmann::json& /*msg*/) {
         return;
     }
 
-    // If host left or game-in-progress becomes unviable, close the room.
-    bool game_over = room->game() && room->state() == RoomState::Locked &&
-                     static_cast<int>(room->players().size()) < 2;
-    if (leaver_was_host || game_over) {
+    // If host left, close the room entirely (game can't continue without host).
+    if (leaver_was_host) {
         for (const auto& p : room->players()) {
             if (p->connected()) {
                 send_json(p->fd(), {
                     {"type", "room_closed"},
-                    {"reason", leaver_was_host ? "host_left" : "not_enough_players"},
+                    {"reason", "host_left"},
                 });
             }
         }
@@ -293,9 +309,11 @@ void Router::handle_leave_room(int fd, const nlohmann::json& /*msg*/) {
 
     // If game is running, notify it of the player departure.
     if (room->game()) {
+        auto* ip_game = dynamic_cast<ip::game::indian_poker::IndianPoker*>(room->game());
+        if (ip_game) ip_game->set_now_ms(now_ms_);
         auto outs = room->game()->on_player_gone(nickname, "left");
         fanout_game_state(*room, outs);
-        if (room->game()->finished()) room->set_state(RoomState::Closed);
+        check_game_finished(*room);
     }
 
     for (const auto& p : room->players()) {

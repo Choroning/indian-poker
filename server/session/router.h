@@ -32,6 +32,7 @@ private:
     void handle_leave_room(int fd, const nlohmann::json& msg);
     void handle_close_room(int fd, const nlohmann::json& msg);
     void fanout_game_state(Room& room, const ip::game::OutgoingList& outs);
+    void check_game_finished(Room& room);
 
     void send_error(int fd, const std::string& code, const std::string& message);
     void send_json(int fd, const nlohmann::json& j);
@@ -46,6 +47,7 @@ private:
     ip::util::RoomCodeGen code_gen_;
     // (room_code:nickname) -> disconnected_at_ms
     std::unordered_map<std::string, uint64_t> grace_;
+    uint64_t now_ms_ = 0;
 };
 
 } // namespace ip::session

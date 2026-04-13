@@ -26,9 +26,14 @@ public:
 
     const State& state() const { return state_; }
 
+    // Set the "current time" used for turn timers. Router must call this
+    // before each start/handle_action/on_player_gone invocation.
+    void set_now_ms(uint64_t now_ms) { now_ms_ = now_ms; }
+
 private:
     Dealer dealer_;
     State state_;
+    uint64_t now_ms_ = 0;
 
     void deal_new_hand();
     void advance_turn();

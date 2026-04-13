@@ -151,7 +151,10 @@ ws.on("lobby_update", (msg) => {
     document.getElementById("btn-leave").hidden = isHost; // host uses 방 닫기, others use 나가기
 });
 
+let _seenGameInThisMatch = false;
+
 ws.on("game_state", (msg) => {
+    const wasLobby = !document.getElementById("game").classList.contains("hidden") ? false : true;
     showScreen("game");
     renderGame(msg, myNick);
     // Show close_room for host, leave for others
@@ -159,7 +162,99 @@ ws.on("game_state", (msg) => {
     const isHost = hostNick === myNick;
     document.getElementById("btn-game-close").hidden = !isHost;
     document.getElementById("btn-game-leave").hidden = isHost;
+
+    // First game_state of a match: show 3-2-1 countdown
+    if (!_seenGameInThisMatch && msg.hand_number === 1 && msg.phase === "BETTING") {
+        _seenGameInThisMatch = true;
+        runCountdown();
+    }
+
+    // Turn timer
+    updateTurnTimer(msg);
 });
+
+ws.on("lobby_update", (msg) => {
+    // Returning to lobby means game ended — reset countdown flag
+    _seenGameInThisMatch = false;
+});
+
+function runCountdown() {
+    const overlay = document.getElementById("countdown-overlay");
+    const numEl = document.getElementById("countdown-number");
+    overlay.classList.remove("hidden");
+    let n = 3;
+    numEl.textContent = n;
+    numEl.style.animation = "none";
+    // trigger reflow
+    void numEl.offsetWidth;
+    numEl.style.animation = "";
+    const tick = () => {
+        n--;
+        if (n <= 0) {
+            overlay.classList.add("hidden");
+            return;
+        }
+        numEl.textContent = n;
+        numEl.style.animation = "none";
+        void numEl.offsetWidth;
+        numEl.style.animation = "";
+        setTimeout(tick, 1000);
+    };
+    setTimeout(tick, 1000);
+}
+
+/* ── Turn Timer ─────────────────────────────────────────── */
+let _timerHandle = null;
+let _autoFoldHandle = null;
+
+function clearTurnTimer() {
+    if (_timerHandle) { cancelAnimationFrame(_timerHandle); _timerHandle = null; }
+    if (_autoFoldHandle) { clearTimeout(_autoFoldHandle); _autoFoldHandle = null; }
+    document.getElementById("turn-timer").classList.add("hidden");
+    document.getElementById("turn-timer").classList.remove("warn");
+}
+
+function updateTurnTimer(state) {
+    clearTurnTimer();
+    if (state.phase !== "BETTING") return;
+    if (!state.turn_deadline_ms || !state.server_now_ms) return;
+
+    const timerEl = document.getElementById("turn-timer");
+    const barEl = document.getElementById("turn-timer-bar");
+    const secEl = document.getElementById("turn-timer-sec");
+    timerEl.classList.remove("hidden");
+
+    // Align client clock with server: offset = server_now - client_now_at_receive
+    const clientReceivedAt = Date.now();
+    const serverOffset = state.server_now_ms - clientReceivedAt;
+    const deadlineClientMs = state.turn_deadline_ms - serverOffset;
+    const totalMs = 15000;
+
+    const isMyTurn = state.current_turn === myNick;
+
+    const render = () => {
+        const remaining = Math.max(0, deadlineClientMs - Date.now());
+        const ratio = remaining / totalMs;
+        barEl.style.transform = `scaleX(${ratio})`;
+        secEl.textContent = Math.ceil(remaining / 1000);
+        if (remaining < 5000) timerEl.classList.add("warn");
+        else timerEl.classList.remove("warn");
+        if (remaining > 0) {
+            _timerHandle = requestAnimationFrame(render);
+        } else {
+            timerEl.classList.add("hidden");
+        }
+    };
+    render();
+
+    // Auto-fold on deadline if it's my turn
+    if (isMyTurn) {
+        const remaining = Math.max(0, deadlineClientMs - Date.now());
+        _autoFoldHandle = setTimeout(() => {
+            ws.send({ type: "action", action: "fold" });
+        }, remaining + 100);
+    }
+}
 
 // We don't get host info in game_state, so track host nickname from lobby_update
 let _lastHost = null;
@@ -173,7 +268,9 @@ ws.on("hand_over", (msg) => {
 });
 
 ws.on("game_over", (msg) => {
-    toast(`게임 종료 — ${msg.winner} 최종 승리 🏆`, "success", 6000);
+    toast(`게임 종료 — ${msg.winner} 최종 승리 🏆`, "success", 5000);
+    _seenGameInThisMatch = false;
+    // Server will send a lobby_update after this, which will switch to lobby view
 });
 
 ws.on("you_left", () => {

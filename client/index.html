@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Indian Poker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="css/style.css?v=28">
+    <link rel="stylesheet" href="css/style.css?v=29">
 </head>
 <body>
     <div id="app">
@@ -89,6 +89,12 @@
         <section id="game" class="screen hidden">
             <div class="table-glow"></div>
             <div class="landing-grain"></div>
+
+            <!-- Countdown overlay for game start -->
+            <div id="countdown-overlay" class="hidden">
+                <div class="countdown-number" id="countdown-number">3</div>
+                <div class="countdown-label">시작합니다</div>
+            </div>
             <header class="topbar">
                 <div class="topbar-title">
                     <span class="topbar-title-1">Indian</span>
@@ -108,6 +114,10 @@
                     <div class="pot-value" id="game-pot">0</div>
                     <div class="pot-sub">
                         <span id="pot-turn"></span>
+                    </div>
+                    <div class="turn-timer hidden" id="turn-timer">
+                        <div class="turn-timer-bar" id="turn-timer-bar"></div>
+                        <div class="turn-timer-text"><span id="turn-timer-sec">15</span>초</div>
                     </div>
                 </div>
 

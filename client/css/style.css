@@ -577,6 +577,75 @@ input:focus, select:focus {
     animation: fade-up 500ms var(--ease-out) both;
 }
 
+/* ── Countdown Overlay ────────────────────────────────── */
+#countdown-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(12, 12, 16, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    pointer-events: none;
+}
+.countdown-number {
+    font-family: var(--font);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(7rem, 22vw, 12rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--gold);
+    text-shadow: 0 0 60px rgba(212, 184, 114, 0.4);
+    animation: countdown-pop 1s var(--ease-spring) both;
+    padding: 0 0.15em;
+}
+.countdown-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: var(--text-3);
+    margin-top: 16px;
+    text-transform: uppercase;
+    animation: fade-in 500ms 200ms both;
+}
+@keyframes countdown-pop {
+    0%   { opacity: 0; transform: scale(1.6); filter: blur(8px); }
+    30%  { opacity: 1; transform: scale(1.08); filter: blur(0); }
+    80%  { opacity: 1; transform: scale(1); filter: blur(0); }
+    100% { opacity: 0.4; transform: scale(0.95); filter: blur(2px); }
+}
+
+/* ── Turn Timer ───────────────────────────────────────── */
+.turn-timer {
+    margin: 14px auto 0;
+    max-width: 220px;
+    width: 100%;
+}
+.turn-timer-bar {
+    height: 4px;
+    background: var(--gold);
+    border-radius: 2px;
+    box-shadow: 0 0 12px var(--gold-glow);
+    width: 100%;
+    transform-origin: left center;
+    transition: transform 200ms linear, background 300ms;
+}
+.turn-timer.warn .turn-timer-bar { background: var(--red); box-shadow: 0 0 12px rgba(196,69,58,0.4); }
+.turn-timer-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+    text-align: center;
+}
+.turn-timer.warn .turn-timer-text { color: var(--red); }
+
 /* ── Center Pot Display ───────────────────────────────── */
 .pot-display {
     text-align: center;

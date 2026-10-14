@@ -43,7 +43,7 @@ This project sits at the intersection of three undergraduate courses at Korea Un
 |:------ |:-------- |:---------------- |
 | **Computer Networks** (`DCCS307-01`) | Spring 2025 | TCP socket programming, protocol design, HTTP message parsing, application-layer protocols built on top of transport-layer primitives |
 | **Object-Oriented Programming and Practice** (`DCCS213-01`) | Spring 2025 | Client-server architecture (previously practiced in Java with `ServerSocket`), separation of concerns, interface-based polymorphism for pluggable game modules |
-| **Operating Systems** (`DCCS309-01`) | Spring 2026 (current) | I/O multiplexing with `select(2)`, single-threaded event-driven concurrency, file descriptor management, race-condition avoidance without locks |
+| **Operating Systems** (`DCCS309-01`) | Spring 2026 | I/O multiplexing with `select(2)`, single-threaded event-driven concurrency, file descriptor management, race-condition avoidance without locks |
 
 The prior Computer Networks term project (a simple HTTP server in Python) and the OOP term project (a multiplayer chat application in Java with `ServerSocket`) both serve as direct stepping stones. This project extends those experiences in two directions at once:
 
